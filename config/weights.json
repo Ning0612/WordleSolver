@@ -1,0 +1,18 @@
+{
+  "green": 10.0,
+  "yellow": 5.0,
+  "gray": -5.0,
+  "unused": 8.0,
+  "exploration": 12.0,
+  "duplicate_penalty": 15.0,
+  "_comment": "Weights for Wordle Solver recommendation scoring",
+  "_description": {
+    "green": "Letter confirmed in correct position (high value)",
+    "yellow": "Letter confirmed but position unknown (medium value)",
+    "gray": "Letter confirmed absent (negative/zero to discourage)",
+    "unused": "New letter not yet tried (high value for exploration)",
+    "exploration": "Bonus multiplier for unused letters in rounds 1-3",
+    "duplicate_penalty": "Penalty multiplier for duplicate letters in rounds 1-3"
+  },
+  "_tuning_notes": "Increase exploration/unused for more aggressive exploration. Increase duplicate_penalty to strongly discourage repeats in early rounds."
+}
