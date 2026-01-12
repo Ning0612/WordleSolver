@@ -1,3 +1,29 @@
+# Python
 .venv
-.claude
 __pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Claude
+.claude
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+_site/
+dist/
+build/
+
+# Temporary files
+*.tmp
+*.log
+tmpclaude-*

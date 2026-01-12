@@ -2,6 +2,15 @@
 
 **Independent Wordle-solving tool. Not affiliated with The New York Times.**
 
+This project provides **two versions**:
+
+- **🖥️ [Desktop App](#quick-start)** - Tkinter GUI with advanced keyboard controls
+- **🌐 [Web App](web/README.md)** - Browser-based PWA powered by Pyodide ([Try it live](https://ning0612.github.io/WordleSolver/))
+
+Both versions share the same intelligent constraint-based solving algorithm.
+
+---
+
 An intelligent desktop application that helps solve Wordle puzzles using advanced constraint-based filtering and weighted scoring algorithms.
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
@@ -130,16 +139,22 @@ python -m src.main
 
 ```
 WordleSolver/
-├── src/
-│   ├── main.py           # Application entry point
+├── src/                  # Python core modules (shared by both versions)
+│   ├── main.py           # CLI application entry point
 │   ├── ui.py             # Tkinter GUI implementation
 │   ├── constraints.py    # Constraint and feedback logic
 │   ├── solver.py         # Phase 1: Candidate filtering
 │   ├── recommender.py    # Phase 2: Weighted scoring
 │   ├── stats.py          # Statistical analysis and caching
 │   └── dictionary.py     # Word list management
+├── web/                  # Web version (GitHub Pages + Pyodide)
+│   ├── index.html        # Main page
+│   ├── app.js            # Frontend + Pyodide integration
+│   ├── styles.css        # Stylesheet
+│   ├── assets/           # Web-specific assets
+│   └── README.md         # Web version documentation
 ├── data/
-│   └── five_letter_words.txt  # 15,921 five-letter word dictionary
+│   └── five_letter_words.txt  # 15,921 word dictionary (shared)
 ├── config/
 │   └── weights.json      # Configurable scoring weights
 ├── scripts/
@@ -148,7 +163,7 @@ WordleSolver/
 │   ├── ARCHITECTURE.md   # System architecture details
 │   ├── ALGORITHM.md      # Solving algorithm explanation
 │   └── UI_GUIDE.md       # UI/UX design documentation
-└── README.md            # This file
+└── README.md             # This file
 ```
 
 ## Technical Highlights

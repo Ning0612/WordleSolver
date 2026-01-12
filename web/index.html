@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="智能 Wordle 解題助手 - 使用演算法推薦最佳猜測">
+  <meta name="theme-color" content="#6aaa64">
+  <title>Wordle Solver</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+
+<body>
+  <!-- 主容器 -->
+  <div class="container">
+    <!-- 標題 -->
+    <header>
+      <h1>Wordle Solver</h1>
+      <p class="subtitle">智能解題助手</p>
+    </header>
+
+    <!-- 載入指示器 -->
+    <div id="loading-indicator" class="loading">
+      <div class="spinner"></div>
+      <p>載入中...</p>
+    </div>
+
+    <!-- 主要內容（初始隱藏） -->
+    <main id="main-content" class="hidden">
+      <!-- 推薦清單（移至頂部） -->
+      <section class="recommendations">
+        <p class="disclaimer">Independent Wordle-solving tool. Not affiliated with The New York Times.</p>
+        <h2>Word Analysis & Recommendations</h2>
+        <div class="rec-legend">
+          <div class="legend-item">
+            <div class="legend-dot candidate"></div>
+            <span>Candidate</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot exploration"></div>
+            <span>Exploration</span>
+          </div>
+        </div>
+        <div class="rec-grid" id="recommendation-grid">
+          <div class="rec-column" id="candidate-list">
+            <!-- 候選單字由 JS 動態生成 -->
+          </div>
+          <div class="rec-column" id="exploration-list">
+            <!-- 探索單字由 JS 動態生成 -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 字母網格 6×5 -->
+      <section class="grid-section">
+        <div class="grid" id="wordle-grid">
+          <!-- 30 個格子由 JS 動態生成 -->
+        </div>
+      </section>
+
+      <!-- 虛擬鍵盤（增強版） -->
+      <section class="keyboard">
+        <div class="keyboard-row">
+          <button class="key" data-key="Q">Q</button>
+          <button class="key" data-key="W">W</button>
+          <button class="key" data-key="E">E</button>
+          <button class="key" data-key="R">R</button>
+          <button class="key" data-key="T">T</button>
+          <button class="key" data-key="Y">Y</button>
+          <button class="key" data-key="U">U</button>
+          <button class="key" data-key="I">I</button>
+          <button class="key" data-key="O">O</button>
+          <button class="key" data-key="P">P</button>
+        </div>
+        <div class="keyboard-row">
+          <button class="key" data-key="A">A</button>
+          <button class="key" data-key="S">S</button>
+          <button class="key" data-key="D">D</button>
+          <button class="key" data-key="F">F</button>
+          <button class="key" data-key="G">G</button>
+          <button class="key" data-key="H">H</button>
+          <button class="key" data-key="J">J</button>
+          <button class="key" data-key="K">K</button>
+          <button class="key" data-key="L">L</button>
+        </div>
+        <div class="keyboard-row">
+          <button class="key key-large" data-key="Backspace">⌫</button>
+          <button class="key" data-key="Z">Z</button>
+          <button class="key" data-key="X">X</button>
+          <button class="key" data-key="C">C</button>
+          <button class="key" data-key="V">V</button>
+          <button class="key" data-key="B">B</button>
+          <button class="key" data-key="N">N</button>
+          <button class="key" data-key="M">M</button>
+        </div>
+        <div class="keyboard-row">
+          <button class="key" data-key="ArrowLeft">←</button>
+          <button class="key" data-key="ArrowUp">↑</button>
+          <button class="key" data-key="ArrowDown">↓</button>
+          <button class="key" data-key="ArrowRight">→</button>
+          <button class="key key-large" data-key=" ">Space</button>
+          <button class="key key-large" data-key="Enter">Enter</button>
+        </div>
+      </section>
+
+      <!-- 控制按鈕 -->
+      <section class="controls">
+        <button id="submit-btn" class="btn btn-primary">提交當前行</button>
+        <button id="reset-btn" class="btn btn-secondary">重新開始</button>
+      </section>
+    </main>
+
+    <!-- 錯誤訊息 -->
+    <div id="error-message" class="error hidden"></div>
+
+    <!-- 頁尾 -->
+    <footer>
+      <p>Made with ❤️ using <a href="https://pyodide.org" target="_blank">Pyodide</a></p>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+  <script src="app.js" defer></script>
+</body>
+
+</html>
