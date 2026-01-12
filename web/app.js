@@ -441,16 +441,35 @@ async function initPyodide() {
   ];
 
   // 使用 Pyodide FS 寫入檔案後 import（正確的模組載入方式）
+  // 支援本地測試 (../src/) 和 GitHub Pages 部署 (src/)
+  const possiblePaths = ['../src/', 'src/'];
+
   for (const moduleName of modules) {
-    const response = await fetch(`../src/${moduleName}`);
-    if (!response.ok) {
-      throw new Error(`無法載入 ${moduleName}: ${response.status} ${response.statusText}`);
+    let code = null;
+    let loadedFrom = null;
+
+    // 嘗試不同路徑
+    for (const basePath of possiblePaths) {
+      try {
+        const response = await fetch(`${basePath}${moduleName}`);
+        if (response.ok) {
+          code = await response.text();
+          loadedFrom = basePath;
+          break;
+        }
+      } catch (e) {
+        // 繼續嘗試下一個路徑
+        continue;
+      }
     }
-    const code = await response.text();
+
+    if (!code) {
+      throw new Error(`無法載入 ${moduleName}: 已嘗試路徑 ${possiblePaths.join(', ')}`);
+    }
 
     // 寫入 Pyodide 虛擬檔案系統
     STATE.pyodide.FS.writeFile(`/home/pyodide/${moduleName}`, code);
-    console.log(`[Pyodide] 載入完成: ${moduleName}`);
+    console.log(`[Pyodide] 載入完成: ${moduleName} (從 ${loadedFrom})`);
   }
 
   // 步驟 4: 初始化 WordleCore
