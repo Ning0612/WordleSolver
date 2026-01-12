@@ -51,14 +51,14 @@ jobs:
           if [ ! -f _site/assets/five_letter_words.json ]; then
             echo "Converting dictionary to JSON..."
             python3 << 'EOF'
-import json
-with open('data/five_letter_words.txt', 'r', encoding='utf-8') as f:
-    words = [line.strip().lower() for line in f if len(line.strip()) == 5 and line.strip().isalpha()]
-words = sorted(set(words))
-with open('_site/assets/five_letter_words.json', 'w', encoding='utf-8') as f:
-    json.dump(words, f, ensure_ascii=False)
-print(f'Converted {len(words)} words to JSON')
-EOF
+          import json
+          with open('data/five_letter_words.txt', 'r', encoding='utf-8') as f:
+              words = [line.strip().lower() for line in f if len(line.strip()) == 5 and line.strip().isalpha()]
+          words = sorted(set(words))
+          with open('_site/assets/five_letter_words.json', 'w', encoding='utf-8') as f:
+              json.dump(words, f, ensure_ascii=False)
+          print(f'Converted {len(words)} words to JSON')
+          EOF
           fi
 
           # 顯示檔案結構
