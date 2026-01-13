@@ -240,6 +240,8 @@ class WordleSolverApp:
         All 6 rows are history rows.
         Current input uses the active history row (round_number - 1).
         Codex fix: Removed separate row 7 for input.
+
+        Enhanced: Click on cell to cycle color (Gray → Orange → Blue)
         """
         grid_frame = tk.Frame(parent, bg=COLORS["bg_dark"])
         grid_frame.pack(pady=10)
@@ -257,9 +259,14 @@ class WordleSolverApp:
                     bg=COLORS["letter_empty"],
                     fg=COLORS["text"],
                     relief=tk.FLAT,
-                    bd=2
+                    bd=2,
+                    cursor="hand2"  # 滑鼠游標改為手形，表示可點擊
                 )
                 label.grid(row=row, column=col, padx=3, pady=3)
+
+                # 綁定滑鼠左鍵點擊事件：點擊格子切換顏色
+                label.bind("<Button-1>", lambda e, r=row, c=col: self._on_cell_click(r, c))
+
                 row_labels.append(label)
             self.history_labels.append(row_labels)
 
@@ -281,7 +288,32 @@ class WordleSolverApp:
         )
         reset_btn.pack()
 
-    # === Keyboard Event Handlers ===
+    # === Event Handlers ===
+
+    def _on_cell_click(self, row: int, col: int):
+        """
+        Handle mouse click on cell.
+
+        Clicking a cell:
+        1. Moves focus to that cell
+        2. Cycles the color (Gray → Orange → Blue)
+
+        Args:
+            row: Row index (0-5)
+            col: Column index (0-4)
+        """
+        # Update focus to clicked cell
+        self.state.focused_row = row
+        self.state.focused_col = col
+
+        # Update visual focus indicator
+        self._update_input_focus()
+
+        # Cycle the color of clicked cell
+        self._cycle_current_color()
+
+        # Return focus to master window to maintain keyboard input
+        self.master.focus_set()
 
     def _on_key_press(self, event):
         """
