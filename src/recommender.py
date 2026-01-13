@@ -176,6 +176,21 @@ class WordRecommender:
             raise ValueError(f"round_number must be >= 1, got {round_number}")
         if top_n < 1:
             raise ValueError(f"top_n must be >= 1, got {top_n}")
+        
+        # ✨ 驗證: 檢查候選數量（在計算分數前）
+        if not candidates or len(candidates) == 0:
+            raise ValueError(
+                "找不到符合條件的候選單字。\n"
+                "這可能是因為顏色標記有誤，或答案不在詞庫中。"
+            )
+        
+        # ✨ 驗證: 檢查約束條件合法性（在計算分數前）
+        for letter, (min_count, max_count) in constraint.letter_counts.items():
+            if max_count is not None and min_count > max_count:
+                raise ValueError(
+                    f"約束條件矛盾: 字母 '{letter}' 的 min={min_count} > max={max_count}。\n"
+                    "這通常是因為顏色標記有誤。"
+                )
 
         # Step 1: Identify definitely absent letters (max_count == 0)
         definitely_absent = constraint.get_definitely_absent()

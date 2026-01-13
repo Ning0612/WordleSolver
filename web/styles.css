@@ -407,12 +407,40 @@ header h1 {
 
 /* ===== 錯誤訊息 ===== */
 .error {
-  padding: 12px;
+  position: relative;
+  padding: 16px 40px 16px 16px;
   margin: var(--gap-medium) 0;
   background: #fee;
   border-left: 4px solid #c33;
   border-radius: 4px;
   color: #c33;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.error-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  color: #c33;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.error-close:hover {
+  opacity: 1;
 }
 
 /* ===== 頁尾 ===== */

@@ -87,6 +87,7 @@ async function init() {
   DOM.submitBtn.addEventListener('click', handleSubmit);
   DOM.resetBtn.addEventListener('click', handleReset);
   setupKeyboard();
+  setupGridEventDelegation();  // 使用事件委派優化網格點擊
 
   // 載入 Pyodide
   try {
@@ -118,13 +119,25 @@ function createGrid() {
       cell.dataset.col = col;
       cell.dataset.state = '';  // '', 'gray', 'yellow', 'green'
 
-      // 點擊事件：輸入字母或切換顏色
-      cell.addEventListener('click', () => handleCellClick(row, col));
+      // ⚠️ 已移除單獨的事件監聽器,改用事件委派 (見 setupGridEventDelegation)
 
       DOM.grid.appendChild(cell);
       STATE.grid.push(cell);
     }
   }
+}
+
+// ===== 設定網格事件委派 =====
+// 優化: 使用事件委派替代 30 個獨立監聽器,減少記憶體佔用
+function setupGridEventDelegation() {
+  DOM.grid.addEventListener('click', (e) => {
+    const cell = e.target.closest('.cell');
+    if (!cell) return;
+
+    const row = parseInt(cell.dataset.row, 10);
+    const col = parseInt(cell.dataset.col, 10);
+    handleCellClick(row, col);
+  });
 }
 
 // ===== 格子點擊處理 =====
@@ -288,6 +301,48 @@ function moveDown() {
   }
 }
 
+// ===== 前端驗證函數 =====
+/**
+ * 驗證單個回合的反饋是否有邏輯衝突
+ * @param {string} guess - 猜測的單字（5個字母）
+ * @param {Array<string>} feedback - 反饋顏色數組 ['gray', 'yellow', 'green', ...]
+ * @returns {string|null} - 錯誤訊息，如果沒有錯誤則返回 null
+ */
+function validateFeedback(guess, feedback) {
+  // 統計每個字母的顏色狀態
+  const letterStatus = {}; // { 'a': { green: 1, yellow: 0, gray: 2 } }
+
+  for (let i = 0; i < 5; i++) {
+    const letter = guess[i];
+    const color = feedback[i];
+
+    if (!letterStatus[letter]) {
+      letterStatus[letter] = { green: 0, yellow: 0, gray: 0 };
+    }
+
+    letterStatus[letter][color]++;
+  }
+
+  // 檢查每個字母的邏輯一致性
+  for (const [letter, status] of Object.entries(letterStatus)) {
+    const hasPositive = status.green > 0 || status.yellow > 0; // 表示字母存在
+    const hasGray = status.gray > 0; // 表示字母不存在或已達上限
+
+    // 簡單檢測：如果只有 1 個該字母，但既是綠色/黃色又是灰色，這是錯誤
+    const totalCount = status.green + status.yellow + status.gray;
+    if (totalCount === 1 && hasPositive && hasGray) {
+      // 不可能同時是存在和不存在（單個字母的情況）
+      return `⚠️ 字母 '${letter.toUpperCase()}' 的顏色標記矛盾`;
+    }
+
+    // 對於重複字母（totalCount > 1），允許部分是綠色/黃色，部分是灰色
+    // 這表示答案中該字母的數量 = 綠色數 + 黃色數
+    // 後端會處理這種複雜邏輯
+  }
+
+  return null; // 沒有發現明顯錯誤
+}
+
 // ===== 提交當前行 =====
 async function handleSubmit() {
   console.log('[Submit] 提交所有完整行');
@@ -319,6 +374,15 @@ async function handleSubmit() {
   }
 
   console.log('[Submit] 找到', completeRows.length, '個完整行');
+
+  // ===== 前端預先驗證（避免不必要的後端計算）=====
+  for (const { row, guess, feedback } of completeRows) {
+    const validationError = validateFeedback(guess, feedback);
+    if (validationError) {
+      showError(`第 ${row + 1} 行標記錯誤: ${validationError}`);
+      return;
+    }
+  }
 
   // 呼叫 Python 核心處理所有完整行
   try {
@@ -355,8 +419,43 @@ async function handleSubmit() {
     focusCell(STATE.currentRow, STATE.currentCol);
 
   } catch (error) {
-    showError(`計算錯誤: ${error.message}`);
-    console.error('[Submit] 錯誤:', error);
+    // 從 Pyodide Traceback 中提取最後一行的錯誤訊息
+    let errorMsg = error.message;
+
+    // 如果是 Traceback，提取最後一行（真正的錯誤訊息）
+    if (errorMsg.includes('Traceback')) {
+      const lines = errorMsg.split('\n');
+      // 找到最後一個非空行（通常是 ValueError: ... 這一行）
+      for (let i = lines.length - 1; i >= 0; i--) {
+        const trimmed = lines[i].trim();
+        if (trimmed && (trimmed.startsWith('ValueError') ||
+          trimmed.startsWith('Error') ||
+          trimmed.startsWith('Exception'))) {
+          errorMsg = trimmed;
+          break;
+        }
+      }
+    }
+
+    // 檢測是否為用戶設定錯誤
+    if (errorMsg.includes('Impossible constraint') ||
+      errorMsg.includes('約束條件矛盾') ||
+      (errorMsg.includes('min=') && errorMsg.includes('max='))) {
+      // 約束條件衝突（例如同一字母既是黃色又是灰色）
+      errorMsg = `⚠️ 顏色標記設定有誤\n\n這通常是因為同一字母被標記了衝突的顏色（例如同時標記為黃色和灰色）。\n請檢查您的顏色標記是否正確。`;
+    } else if (errorMsg.includes('Conflicting')) {
+      // 其他衝突錯誤（綠色位置衝突、綠色/黃色衝突等）
+      errorMsg = `⚠️ 顏色標記設定有誤\n\n請檢查您的顏色標記是否正確。`;
+    } else if (errorMsg.includes('empty') ||
+      errorMsg.includes('no candidates') ||
+      errorMsg.includes('找不到符合條件的候選單字') ||
+      errorMsg.includes('IndexError')) {
+      // 沒有候選單字（可能是標記錯誤或答案不在詞庫中）
+      errorMsg = `⚠️ 找不到符合條件的單字\n\n這可能是因為：\n1. 顏色標記有誤，導致條件互相矛盾\n2. 答案不在本詞庫中（本詞庫包含常見的 5 字母英文單字）\n\n請檢查您的顏色標記是否正確。`;
+    }
+
+    showError(`計算錯誤: ${errorMsg}`);
+    console.error('[Submit] 完整錯誤訊息:', error);  // 完整錯誤仍記錄在 console 供除錯
   } finally {
     DOM.submitBtn.disabled = false;
     DOM.submitBtn.textContent = '提交當前行';
@@ -397,13 +496,47 @@ async function handleReset() {
 }
 
 // ===== 顯示錯誤訊息 =====
+let errorTimeout = null;
+
 function showError(message) {
-  DOM.errorMessage.textContent = message;
+  // 清除之前的計時器
+  if (errorTimeout) {
+    clearTimeout(errorTimeout);
+    errorTimeout = null;
+  }
+
+  // 支援多行訊息（將 \n 轉為 <br>）
+  const formattedMessage = message.replace(/\n/g, '<br>');
+
+  // 添加關閉按鈕
+  DOM.errorMessage.innerHTML = `
+    ${formattedMessage}
+    <button class="error-close" aria-label="關閉錯誤訊息" title="點擊關閉">×</button>
+  `;
   DOM.errorMessage.classList.remove('hidden');
 
-  setTimeout(() => {
+  // 綁定關閉按鈕事件
+  const closeBtn = DOM.errorMessage.querySelector('.error-close');
+  const hideError = () => {
     DOM.errorMessage.classList.add('hidden');
-  }, 5000);
+    if (errorTimeout) {
+      clearTimeout(errorTimeout);
+      errorTimeout = null;
+    }
+  };
+
+  closeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    hideError();
+  });
+
+  // 點擊錯誤訊息區域也可關閉
+  DOM.errorMessage.addEventListener('click', hideError, { once: true });
+
+  // 15 秒後自動隱藏（給予足夠時間閱讀）
+  errorTimeout = setTimeout(() => {
+    hideError();
+  }, 15000);
 }
 
 // ===== Pyodide 初始化 =====
@@ -517,6 +650,13 @@ def submit_round(guess, feedback_colors):
     # Phase 1: 過濾候選
     candidates = filter_candidates(_word_list, _current_constraint)
     
+    # 驗證: 檢查是否有候選單字（在計算推薦前）
+    if len(candidates) == 0:
+        raise ValueError(
+            "找不到符合條件的候選單字。"
+            "這可能是因為顏色標記有誤，或答案不在詞庫中。"
+        )
+    
     # Phase 2: 推薦
     round_number = len(_history) + 1
     recommendations = _recommender.recommend(
@@ -578,12 +718,9 @@ json.dumps({
 }
 
 // ===== 更新推薦清單 =====
+// 優化: 使用 DocumentFragment 批次插入,減少 reflow 次數 (10次 → 2次)
 function updateRecommendations(candidates, explorations) {
   console.log('[UI] 更新推薦清單:', candidates.length, '候選,', explorations.length, '探索');
-
-  // 清空兩個欄位
-  DOM.candidateList.innerHTML = '';
-  DOM.explorationList.innerHTML = '';
 
   // 檢查是否只有唯一候選
   if (candidates.length === 1) {
@@ -593,7 +730,8 @@ function updateRecommendations(candidates, explorations) {
     }, 100);
   }
 
-  // 填充候選欄（藍色）
+  // 使用 DocumentFragment 批次建立候選欄項目
+  const candidateFragment = document.createDocumentFragment();
   candidates.forEach(([word, score], index) => {
     const item = document.createElement('div');
     item.className = 'rec-item candidate';
@@ -606,10 +744,11 @@ function updateRecommendations(candidates, explorations) {
       fillCurrentRow(word);
     });
 
-    DOM.candidateList.appendChild(item);
+    candidateFragment.appendChild(item);
   });
 
-  // 填充探索欄（橘色）
+  // 使用 DocumentFragment 批次建立探索欄項目
+  const explorationFragment = document.createDocumentFragment();
   explorations.forEach(([word, score], index) => {
     const item = document.createElement('div');
     item.className = 'rec-item exploration';
@@ -622,8 +761,14 @@ function updateRecommendations(candidates, explorations) {
       fillCurrentRow(word);
     });
 
-    DOM.explorationList.appendChild(item);
+    explorationFragment.appendChild(item);
   });
+
+  // 一次性插入 DOM (只觸發 2 次 reflow,而非 10 次)
+  DOM.candidateList.innerHTML = '';
+  DOM.candidateList.appendChild(candidateFragment);
+  DOM.explorationList.innerHTML = '';
+  DOM.explorationList.appendChild(explorationFragment);
 }
 
 
