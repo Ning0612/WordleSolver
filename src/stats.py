@@ -72,7 +72,7 @@ class LetterStats:
     def get_position_frequencies(
         self,
         candidates: List[str],
-        min_candidates_threshold: int = 10
+        min_candidates_threshold: int = 5  # Optimization 3: 降低閾值以更早使用候選統計
     ) -> Dict[int, Dict[str, float]]:
         """
         Get position-based letter frequencies for given candidates.

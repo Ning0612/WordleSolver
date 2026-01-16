@@ -10,10 +10,44 @@ import json
 import heapq
 from pathlib import Path
 from collections import defaultdict
+from dataclasses import dataclass
 
 from constraints import Constraint
 from stats import LetterStats
 
+
+@dataclass
+class ScoringContext:
+    """
+    封裝評分所需的所有上下文資訊。
+    
+    將多個參數封裝為單一物件，簡化 API 並提升可維護性。
+    """
+    position_freqs: Dict[int, Dict[str, float]]
+    round_number: int
+    constraint: Constraint
+    
+    # 預計算的字母集合（Phase 1 優化：避免在 _score_word 中重複建立）
+    green_letters: Set[str]
+    yellow_letters: Set[str]
+    gray_letters: Set[str]
+    known_letters: Set[str]
+    
+    # Trap Pattern Detection（陷阱模式偵測）
+    is_trap_situation: bool = False  # 是否處於陷阱情境（綠色 ≥ 3）
+    trap_variable_positions: Set[int] = None  # 變動位置（非綠色位置）
+    trap_test_letters: Set[str] = None  # 需測試的字母（候選詞在變動位置的字母）
+    
+    def __post_init__(self):
+        """初始化預設值"""
+        if self.trap_variable_positions is None:
+            self.trap_variable_positions = set()
+        if self.trap_test_letters is None:
+            self.trap_test_letters = set()
+
+
+# Position score multiplier (Optimization 1)
+POSITION_WEIGHT_MULTIPLIER = 2.0  # 略小於狀態權重，達成適度平衡
 
 # Default weights (used if weights.json not found)
 DEFAULT_WEIGHTS = {
@@ -21,8 +55,8 @@ DEFAULT_WEIGHTS = {
     "yellow": 5.0,      # Letter confirmed but position unknown
     "gray": -5.0,       # Letter confirmed absent (should be negative)
     "unused": 8.0,      # New letter (high value for exploration)
-    "exploration": 12.0,  # Bonus for unused letters in early rounds
-    "duplicate_penalty": 15.0  # Penalty for duplicate letters in early rounds
+    "exploration": 12.0,  # Bonus for unused letters (exploration category)
+    "duplicate_penalty": 15.0  # Penalty for duplicate letters (exploration category)
 }
 
 
@@ -212,38 +246,46 @@ class WordRecommender:
         # Step 4: Get position frequencies (based on Phase 1 candidates)
         position_freqs = self.stats.get_position_frequencies(candidates)
 
-        # Phase 1 Optimization: Precompute scoring context
-        # This avoids creating these sets 10,000+ times in _score_word
-        scoring_context = {
-            'green_letters': set(constraint.greens.values()),
-            'yellow_letters': set(constraint.yellows.keys()),
-            'gray_letters': constraint.grays,
-        }
-        scoring_context['known_letters'] = (
-            scoring_context['green_letters'] | 
-            scoring_context['yellow_letters'] | 
-            scoring_context['gray_letters']
+        # Step 4.5: Trap Pattern Detection（陷阱模式偵測）
+        trap_info = self._detect_trap_pattern(candidates, constraint)
+
+        # Create ScoringContext (封裝所有評分所需資訊)
+        green_letters = set(constraint.greens.values())
+        yellow_letters = set(constraint.yellows.keys())
+        gray_letters = constraint.grays
+        known_letters = green_letters | yellow_letters | gray_letters
+        
+        context = ScoringContext(
+            position_freqs=position_freqs,
+            round_number=round_number,
+            constraint=constraint,
+            green_letters=green_letters,
+            yellow_letters=yellow_letters,
+            gray_letters=gray_letters,
+            known_letters=known_letters,
+            # Trap Pattern Detection
+            is_trap_situation=trap_info['is_trap'],
+            trap_variable_positions=trap_info['variable_positions'],
+            trap_test_letters=trap_info['test_letters']
         )
 
-        # Step 5: Score candidate words
+        # Step 5: Score candidate words (Exploitation strategy - no exploration logic)
         scored_candidates: List[Tuple[str, float]] = []
         for word in candidate_words:
             score = self._score_word(
                 word=word,
-                position_freqs=position_freqs,
-                round_number=round_number,
-                scoring_context=scoring_context
+                context=context,
+                is_exploration=False  # Candidates: 不啟用探索邏輯
             )
             scored_candidates.append((word, score))
 
-        # Step 6: Score exploration words
+        # Step 6: Score exploration words (Exploration strategy - always enable exploration logic)
         scored_explorations: List[Tuple[str, float]] = []
         for word in exploration_words:
             score = self._score_word(
                 word=word,
-                position_freqs=position_freqs,
-                round_number=round_number,
-                scoring_context=scoring_context
+                context=context,
+                is_exploration=True  # Explorations: 永遠啟用探索邏輯
             )
             scored_explorations.append((word, score))
 
@@ -267,86 +309,138 @@ class WordRecommender:
             "explorations": top_explorations
         }
 
+    def _detect_trap_pattern(
+        self,
+        candidates: List[str],
+        constraint: Constraint
+    ) -> Dict[str, any]:
+        """
+        偵測是否處於陷阱模式情境。
+        
+        陷阱情境定義：
+        - 綠色字母 ≥ 3 個時，候選詞可能共享同一模板（如 _IGHT）
+        - 需要優先測試在非模板位置的差異字母
+        
+        Args:
+            candidates: 當前候選詞列表
+            constraint: 約束條件
+            
+        Returns:
+            {
+                'is_trap': bool,  # 是否處於陷阱情境
+                'variable_positions': Set[int],  # 非綠色的位置
+                'test_letters': Set[str]  # 候選詞在變動位置的所有可能字母
+            }
+        """
+        green_count = len(constraint.greens)
+        
+        # 條件：綠色字母 < 3，不啟用陷阱偵測
+        if green_count < 3:
+            return {
+                'is_trap': False,
+                'variable_positions': set(),
+                'test_letters': set()
+            }
+        
+        # 找出非綠色位置（變動位置）
+        all_positions = set(range(5))
+        green_positions = set(constraint.greens.keys())
+        variable_positions = all_positions - green_positions
+        
+        # 收集候選詞在變動位置的所有字母
+        test_letters = set()
+        for word in candidates:
+            for pos in variable_positions:
+                test_letters.add(word[pos])
+        
+        return {
+            'is_trap': True,
+            'variable_positions': variable_positions,
+            'test_letters': test_letters
+        }
+
     def _score_word(
         self,
         word: str,
-        position_freqs: Dict[int, Dict[str, float]],
-        round_number: int,
-        scoring_context: Dict[str, Set[str]]
+        context: ScoringContext,
+        is_exploration: bool = False
     ) -> float:
         """
-        Compute weighted score for a single word.
+        計算單字評分（Category-based exploration logic）。
 
-        Scoring formula:
-        score = position_score
+        評分公式：
+        score = position_score (× 2)
               + state_weight_score
-              + exploration_bonus (if round <= 3)
-              - duplicate_penalty (if round <= 3)
+              + exploration_bonus (if is_exploration)
+              - duplicate_penalty (if is_exploration)
 
         Args:
-            word: Word to score
-            position_freqs: Position-based letter frequencies
-            round_number: Current round number (1-indexed)
-            scoring_context: Precomputed letter sets (Phase 1 optimization)
-                           Contains: green_letters, yellow_letters, gray_letters, known_letters
+            word: 待評分單字
+            context: 評分上下文（封裝所有必要資訊）
+            is_exploration: True 表示探索類別（Explorations），永遠啟用探索邏輯
+                          False 表示候選類別（Candidates），不啟用探索邏輯
 
         Returns:
-            Weighted score (higher is better)
+            加權分數（越高越好）
         """
         score = 0.0
+        unique_letters = set(word)
 
-        # Component 1: Position score (sum of letter frequencies at each position)
+        # Component 1: Position score (Optimization 1: × 2 multiplier)
         position_score = 0.0
         for pos, letter in enumerate(word):
-            # Get frequency for this letter at this position
-            # Default to 0.0 if letter not found (shouldn't happen with full dict)
-            freq = position_freqs[pos].get(letter, 0.0)
+            freq = context.position_freqs[pos].get(letter, 0.0)
             position_score += freq
-
+        
+        position_score *= POSITION_WEIGHT_MULTIPLIER  # × 2
         score += position_score
 
         # Component 2: State weight score
-        # Categorize each letter and apply corresponding weight
         state_score = 0.0
-        unique_letters = set(word)
-
-        # Phase 1 Optimization: Use precomputed sets from scoring_context
-        green_letters = scoring_context['green_letters']
-        yellow_letters = scoring_context['yellow_letters']
-        gray_letters = scoring_context['gray_letters']
-        known_letters = scoring_context['known_letters']
-
         for letter in unique_letters:
-            if letter in green_letters:
+            if letter in context.green_letters:
                 state_score += self.weights["green"]
-            elif letter in yellow_letters:
+            elif letter in context.yellow_letters:
                 state_score += self.weights["yellow"]
-            elif letter in gray_letters:
-                state_score += self.weights["gray"]  # Should be negative/zero
+            elif letter in context.gray_letters:
+                state_score += self.weights["gray"]
             else:
-                # Unused letter - high value for exploration
                 state_score += self.weights["unused"]
-
         score += state_score
 
-        # Component 3: Exploration bonus (rounds 1-3 only)
-        if round_number <= 3:
-            # Count unique letters NOT in known set
-            unused_letters = unique_letters - known_letters
+        # Component 3 & 4: Exploration logic (Optimization 4: category-based)
+        if is_exploration:
+            # Component 3: Exploration bonus (always enabled for Explorations)
+            unused_letters = unique_letters - context.known_letters
             exploration_bonus = len(unused_letters) * self.weights["exploration"]
             score += exploration_bonus
 
-        # Component 4: Duplicate penalty (rounds 1-3 only)
-        if round_number <= 3:
-            # Penalize duplicate letters (encourages exploring more letters)
+            # Component 4: Duplicate penalty (always enabled for Explorations)
             duplicate_count = 5 - len(unique_letters)  # 0 to 4
-
-            # Note: Removed edge case optimization for duplicate letters with min_count > 1
-            # This was a minor optimization and removing it simplifies the API
-            # Could be re-added by including letter_counts in scoring_context if needed
-
+            
+            # Optimization 2: 減免已知重複字母的懲罰
+            for letter in unique_letters:
+                if letter in context.constraint.letter_counts:
+                    min_count, _ = context.constraint.letter_counts[letter]
+                    if min_count > 1:
+                        # 已知有重複：每個重複字母減少 1 次懲罰
+                        duplicate_count = max(0, duplicate_count - 1)
+            
             duplicate_penalty = duplicate_count * self.weights["duplicate_penalty"]
             score -= duplicate_penalty
+
+        # Component 5: Trap Pattern Bonus (僅 Explorations + 陷阱情境啟用)
+        if is_exploration and context.is_trap_situation:
+            # 計算此單字在變動位置包含多少「需測試的字母」
+            trap_coverage = 0
+            for pos in context.trap_variable_positions:
+                if word[pos] in context.trap_test_letters:
+                    trap_coverage += 1
+            
+            # 獎勵：每覆蓋一個測試字母 +15 分
+            # 例如：_IGHT 陷阱，FILMS 包含 4 個測試字母 → +60 分
+            trap_bonus = trap_coverage * 20.0
+            score += trap_bonus
 
         return score
 
