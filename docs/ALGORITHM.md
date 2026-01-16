@@ -208,19 +208,29 @@ Rank ALL dictionary words (not just candidates) to find the **most informative**
 ### Scoring Formula
 
 ```python
-score = position_score
+score = position_score (× 2)     # Position weight multiplier
       + state_weight_score
-      + exploration_bonus  (rounds 1-3 only)
-      - duplicate_penalty  (rounds 1-3 only)
+      + exploration_bonus        # Explorations category only
+      - duplicate_penalty        # Explorations category only
+      + trap_bonus               # Trap pattern situations only
 ```
+
+**Category-Based Exploration Logic** (v2):
+- **Candidates category**: Only `position_score` + `state_weight_score` (no exploration bonuses)
+- **Explorations category**: All components including exploration bonus and duplicate penalty
+
+This differs from the round-based approach where rounds 1-3 used exploration logic regardless of category.
 
 ---
 
-#### Component 1: Position Score
+#### Component 1: Position Score (× 2 Multiplier)
 
 ```python
 position_score = sum(position_freq[pos][letter] for pos, letter in enumerate(word))
+position_score *= 2.0  # POSITION_WEIGHT_MULTIPLIER
 ```
+
+**Optimization**: The position score is multiplied by 2.0 to achieve moderate balance with state weights. This ensures position-based frequency has significant impact on final scoring.
 
 **Position Frequency Table** (example from 150 candidates):
 
@@ -272,15 +282,17 @@ for letter in set(word):
 
 ---
 
-#### Component 3: Exploration Bonus (Rounds 1-3)
+#### Component 3: Exploration Bonus (Explorations Category Only)
 
 ```python
-if round_number <= 3:
-    unused_letters = set(word) - (greens | yellows | grays)
+if is_exploration:  # Category-based, not round-based
+    unused_letters = set(word) - known_letters  # greens | yellows | grays
     exploration_bonus = len(unused_letters) * weights["exploration"]  # ×12.0
 ```
 
-**Purpose**: Encourage testing new letters in early rounds.
+**Purpose**: Encourage testing new letters in exploration-type guesses.
+
+**Key Change (v2)**: Exploration bonus is now applied based on word **category** (Explorations vs Candidates), not round number. Candidates never receive exploration bonus regardless of round.
 
 **Example**:
 - Round 2, known letters = {c, r, a, n, e}
@@ -289,13 +301,13 @@ if round_number <= 3:
 
 ---
 
-#### Component 4: Duplicate Penalty (Rounds 1-3)
+#### Component 4: Duplicate Penalty (Explorations Category Only)
 
 ```python
-if round_number <= 3:
+if is_exploration:  # Category-based, not round-based
     duplicate_count = 5 - len(set(word))  # 0-4
 
-    # Reduce penalty if we know answer has duplicates
+    # Optimization 2: Reduce penalty if we know answer has duplicates
     for letter in set(word):
         if letter in constraint.letter_counts:
             min_count, _ = constraint.letter_counts[letter]
@@ -305,7 +317,9 @@ if round_number <= 3:
     duplicate_penalty = duplicate_count * weights["duplicate_penalty"]  # ×15.0
 ```
 
-**Purpose**: Discourage duplicate letters in early rounds (explore more letters).
+**Purpose**: Discourage duplicate letters in exploration-type guesses (explore more letters).
+
+**Key Change (v2)**: Duplicate penalty is now applied based on word **category**, not round number.
 
 **Exception**: If constraint shows `min_count > 1`, reduce penalty (answer has duplicates).
 
@@ -315,67 +329,114 @@ if round_number <= 3:
 
 ---
 
+#### Component 5: Trap Pattern Bonus (Explorations + Trap Situation Only)
+
+```python
+if is_exploration and is_trap_situation:  # Greens >= 3
+    trap_coverage = count_letters_at_variable_positions_matching_test_letters(word)
+    trap_bonus = trap_coverage * 20.0
+```
+
+**Purpose**: Handle "trap patterns" where candidates share a common template (e.g., `_IGHT` pattern).
+
+**Trap Situation Detection**:
+- Triggered when `greens >= 3` (high constraint situation)
+- Identifies "variable positions" (non-green positions)
+- Collects "test letters" (letters that appear in candidate words at variable positions)
+
+**Example**:
+- Candidates: `["fight", "light", "might", "night", "right", "sight", "tight"]`
+- All share `_IGHT` pattern → greens = 4 (positions 1-4)
+- Variable position: 0
+- Test letters: {f, l, m, n, r, s, t}
+- Exploration word `"films"` → tests F, L at variable position → +40.0 bonus
+
+**Why This Matters**:
+Without trap detection, solver might repeatedly guess candidates (`fight`, `light`, etc.) and fail to solve in 6 rounds. Trap bonus encourages exploration words that test multiple differentiating letters.
+
+---
+
 ### Complete Scoring Example
 
 **Scenario**: Round 2, constraint from "CRANE" → C=green, R=yellow, A=yellow, N=gray, E=gray
 
-**Word 1**: `"cargo"` (candidate)
+**Word 1**: `"cargo"` (Candidate category - no exploration logic)
 ```python
-position_score: 2.00  (C at 0, A at 1, R at 2, G at 3, O at 4)
+position_score: 2.00 × 2 = 4.00  (C at 0, A at 1, R at 2, G at 3, O at 4, × 2 multiplier)
 state_weight:  36.0   (C=green: +10, A=yellow: +5, R=yellow: +5, G=unused: +8, O=unused: +8)
-exploration:   16.0   (G, O unused: 2 × 12)
-duplicate:      0.0   (no duplicates)
+exploration:    0.0   (Candidates category: disabled)
+duplicate:      0.0   (Candidates category: disabled)
 ────────────────────
-TOTAL:         54.0
+TOTAL:         40.0
 ```
 
-**Word 2**: `"stork"` (exploration word)
+**Word 2**: `"stork"` (Explorations category - full exploration logic)
 ```python
-position_score: 1.20  (Lower frequencies at each position)
-state_weight:  28.0   (S=unused: +8, T=unused: +8, O=unused: +8, R=yellow: +5, K=unused: +8, minus N=gray: -5)
+position_score: 1.20 × 2 = 2.40  (Lower frequencies at each position, × 2 multiplier)
+state_weight:  28.0   (S=unused: +8, T=unused: +8, O=unused: +8, R=yellow: +5, K=unused: +8, minus overlap)
 exploration:   48.0   (S, T, O, K unused: 4 × 12)
 duplicate:      0.0   (no duplicates)
 ────────────────────
-TOTAL:         77.2
+TOTAL:         78.4
 ```
 
-**Result**: `"stork"` scores higher due to exploration bonus (more new letters).
+**Result**: `"stork"` scores higher due to exploration bonus (more new letters). Note that exploration logic only applies to the Explorations category.
 
 ---
 
-## Adaptive Strategy by Round
+## Adaptive Strategy by Category (v2)
 
-### Rounds 1-3: Exploration Mode
+### Category 1: Candidates (Exploitation)
 
-**Goal**: Maximize information gain by testing new letters.
+**Definition**: Words that passed Phase 1 filtering (possible answers).
 
-**Characteristics**:
-- High `exploration_bonus` (+12.0 per unused letter)
-- High `duplicate_penalty` (-15.0 per duplicate)
-- Favor words with 5 unique letters
-- Often recommend non-candidate words
-
-**Typical Recommendations**:
-1. `"stork"` (4-5 new letters)
-2. `"bumpy"` (5 new letters)
-3. `"light"` (4-5 new letters)
-
----
-
-### Rounds 4-6: Exploitation Mode
-
-**Goal**: Try likely candidates to solve quickly.
-
-**Characteristics**:
+**Scoring Strategy**:
+- Only `position_score (× 2)` + `state_weight_score`
 - No `exploration_bonus`
 - No `duplicate_penalty`
-- Rely on `position_score` and `state_weight_score`
-- Strongly favor candidates (greens and yellows)
 
-**Typical Recommendations**:
+**Purpose**: Prioritize high-probability answers based on position frequency and letter state.
+
+**Typical Recommendations** (Blue in UI):
 1. `"cargo"` (candidate with high position score)
 2. `"carbo"` (candidate)
 3. `"carol"` (candidate)
+
+---
+
+### Category 2: Explorations (Information Gain)
+
+**Definition**: Words NOT in Phase 1 candidate set, but don't contain gray letters.
+
+**Scoring Strategy**:
+- `position_score (× 2)` + `state_weight_score`
+- Full `exploration_bonus` (+12.0 per unused letter)
+- Full `duplicate_penalty` (-15.0 per duplicate)
+- `trap_bonus` (if trap situation detected)
+
+**Purpose**: Maximize information gain by testing new letter combinations.
+
+**Typical Recommendations** (Orange in UI):
+1. `"stork"` (4-5 new letters)
+2. `"bumpy"` (5 new letters)
+3. `"films"` (good for trap patterns)
+
+---
+
+### Key Design Change (v2)
+
+**Old (Round-Based)**:
+- Rounds 1-3: Exploration bonuses for ALL words
+- Rounds 4-6: No exploration bonuses
+
+**New (Category-Based)**:
+- Candidates: NEVER have exploration bonuses (any round)
+- Explorations: ALWAYS have exploration bonuses (any round)
+
+**Rationale**:
+- Candidates are always potential answers → pure exploitation
+- Explorations are always for information → pure exploration
+- Cleaner separation of concerns regardless of round number
 
 ---
 

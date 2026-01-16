@@ -25,21 +25,23 @@ An intelligent desktop application that helps solve Wordle puzzles using advance
 
 - **🎨 Modern Analysis-Oriented UI**
   - Dark theme with distinct blue/orange color scheme
-  - Interactive 6×5 grid with visual feedback
-  - 2×5 recommendation grid with ranked suggestions
+  - Interactive 6×5 grid with visual feedback and click-to-cycle colors
+  - Split recommendation display: Candidates (blue) | Explorations (orange)
   - Real-time candidate count and constraint visualization
 
-- **⌨️ Advanced Keyboard Controls**
+- **⌨️ Advanced Input Controls**
   - Arrow keys (↑↓←→) for focus navigation
   - Space to cycle colors (Gray → Orange → Blue)
+  - **Click cell** to move focus and cycle color
   - Letter input with auto-advance
   - Backspace to delete and move back
   - Enter to recalculate constraints from all complete rows
 
 - **🧠 Intelligent Recommendations**
-  - Position-based letter frequency analysis
+  - Position-based letter frequency analysis (×2 multiplier)
   - Adaptive weighting system (blue/orange/gray/unused letters)
-  - Exploration bonus for early rounds
+  - Category-based scoring: Candidates vs Explorations
+  - Trap pattern detection for high-constraint situations
   - Duplicate letter penalty (configurable)
   - Cached statistics for performance
 
@@ -103,12 +105,14 @@ python -m src.main
 
 1. **Start the application** - You'll see a 6×5 Wordle grid and recommendation area
 
-2. **Get initial recommendations** - Top 10 words are displayed in a 2×5 grid, ranked by score
+2. **Get initial recommendations** - Top 10 words displayed in two columns:
+   - **Left (Blue)**: Candidates - possible answers
+   - **Right (Orange)**: Explorations - words for information gain
 
-3. **Try a recommended word in Wordle** - Click on a recommendation to auto-fill, or type manually
+3. **Try a recommended word in Wordle** - Double-click to auto-fill, or type manually
 
 4. **Set colors based on Wordle feedback**:
-   - Press **Space** to cycle colors: Gray → Orange → Blue → Gray
+   - Press **Space** or **click cell** to cycle colors: Gray → Orange → Blue → Gray
    - Gray: Letter not in answer
    - Orange: Letter in answer, wrong position
    - Blue: Letter in answer, correct position
@@ -117,23 +121,26 @@ python -m src.main
 
 6. **Repeat until solved** - Use arrow keys to edit previous rows if needed
 
-### Keyboard Controls
+### Input Controls
 
-| Key | Action |
-|-----|--------|
+| Input | Action |
+|-------|--------|
 | **Letters (A-Z)** | Input letter at focused cell, auto-advance |
 | **Space** | Cycle color at focused cell (Gray → Orange → Blue) |
+| **Click cell** | Move focus to cell and cycle color |
 | **Enter** | Recalculate constraints from all complete rows |
 | **Backspace** | Delete focused cell, move left |
 | **Arrow Up/Down** | Move focus between rows |
 | **Arrow Left/Right** | Move focus between columns |
+| **Double-click recommendation** | Auto-fill word into focused row |
 
 ### Tips for Best Results
 
 - **First guess**: Use recommended words with high unique letter count (e.g., SLATE, CRANE, STARE)
-- **Early rounds (1-3)**: Focus on exploration words (marked orange) to maximize information
-- **Later rounds (4-6)**: Focus on candidate words (marked blue) for guaranteed solutions
-- **Edit previous rows**: Use arrow keys if you need to correct color feedback
+- **Early rounds**: Consider exploration words (orange, right column) to maximize information
+- **Later rounds**: Focus on candidate words (blue, left column) for guaranteed solutions
+- **Trap situations**: When 3+ letters are confirmed, use exploration words to test remaining possibilities
+- **Edit previous rows**: Use arrow keys or click if you need to correct color feedback
 
 ## Project Structure
 
@@ -185,23 +192,27 @@ WordleSolver/
 ### Scoring Formula
 
 ```python
-score = position_score
+score = position_score (× 2)    # Position weight multiplier
       + state_weight_score
-      + exploration_bonus  (rounds 1-3)
-      - duplicate_penalty  (rounds 1-3)
+      + exploration_bonus       # Explorations category only
+      - duplicate_penalty       # Explorations category only
+      + trap_bonus              # Trap pattern situations only
 ```
 
 **Components**:
-- `position_score`: Sum of letter frequencies at each position
+- `position_score`: Sum of letter frequencies at each position (×2 multiplier)
 - `state_weight_score`: Weighted value based on letter state (blue/orange/gray/unused)
-- `exploration_bonus`: Bonus for unused letters (early rounds)
-- `duplicate_penalty`: Penalty for duplicate letters (early rounds)
+- `exploration_bonus`: Bonus for unused letters (Explorations category only)
+- `duplicate_penalty`: Penalty for duplicate letters (Explorations category only)
+- `trap_bonus`: Bonus for testing differentiating letters in trap situations (greens ≥ 3)
 
 ### Performance Optimizations
 
 - **Frozenset-based caching** for position frequencies (avoids hash collisions)
+- **Letter index** for fast exploration pool filtering (O(M×K) vs O(N×L×M))
 - **Counter pre-computation** in constraint matching
-- **Fallback to full dictionary** stats when candidates < 10
+- **heapq.nlargest** for efficient top-N selection (O(N+K log N) vs O(N log N))
+- **Fallback to full dictionary** stats when candidates < 5
 - **Grid layout with font measurement** for consistent UI rendering
 
 ## Configuration

@@ -66,11 +66,18 @@ def get_word_list(filepath: str = "data/five_letter_words.txt") -> List[str]
 ```python
 @dataclass
 class Constraint:
-    greens: Dict[int, str]                    # Position → letter (exact matches)
-    yellows: Dict[str, Set[int]]              # Letter → excluded positions
-    letter_counts: Dict[str, Tuple[int, Optional[int]]]  # Letter → (min, max)
-    grays: Set[str]                           # Definitely absent letters
+    greens: Dict[int, str]                              # Position → letter (exact matches)
+    yellows: Dict[str, Set[int]]                        # Letter → excluded positions
+    letter_counts: Dict[str, Tuple[int, Optional[int]]] # Letter → (min, max)
+
+    @property
+    def grays(self) -> Set[str]:
+        """Derived property: letters with max_count == 0"""
+        return {letter for letter, (_, max_c) in self.letter_counts.items()
+                if max_c == 0}
 ```
+
+**Note**: `grays` is now a **derived property** computed from `letter_counts`, not a stored attribute. This avoids inconsistency between `grays` and `letter_counts`.
 
 **Key Methods**:
 - `merge(other: Constraint) -> Constraint`: Combine constraints from multiple rounds
@@ -161,56 +168,106 @@ def recommend(
     candidates: List[str],
     constraint: Constraint,
     round_number: int,
-    top_n: int = 10
-) -> List[Tuple[str, float]]
+    top_n: int = 5  # default changed from 10 to 5
+) -> Dict[str, List[Tuple[str, float]]]  # Returns split categories
 ```
+
+**Return Structure (v2)**:
+```python
+{
+    "candidates": [(word, score), ...],     # Phase 1 candidates (blue in UI)
+    "explorations": [(word, score), ...]    # Non-candidates (orange in UI)
+}
+```
+
+**New Components**:
+
+1. **ScoringContext Dataclass** - Encapsulates all scoring context:
+   ```python
+   @dataclass
+   class ScoringContext:
+       position_freqs: Dict[int, Dict[str, float]]
+       round_number: int
+       constraint: Constraint
+       green_letters: Set[str]      # Precomputed
+       yellow_letters: Set[str]     # Precomputed
+       gray_letters: Set[str]       # Precomputed
+       known_letters: Set[str]      # Precomputed
+       # Trap Pattern Detection
+       is_trap_situation: bool
+       trap_variable_positions: Set[int]
+       trap_test_letters: Set[str]
+   ```
+
+2. **Letter Index Optimization**:
+   ```python
+   def _build_letter_index(self) -> Dict[str, Set[str]]:
+       """Map letter → set of words containing it"""
+       # Enables O(M × K) filtering instead of O(N × L × M)
+   ```
 
 **Multi-Stage Scoring**:
 
-1. **Build Scorable Set**:
+1. **Build Exploration Pool** (optimized):
    ```python
-   definitely_absent = constraint.get_definitely_absent()
-   scorable_words = [
-       word for word in full_dictionary
-       if not any(ch in definitely_absent for ch in word)
-   ]
+   # OLD: O(N × L × M) - iterate all words, check each letter
+   # NEW: O(M × K) - use letter index for fast exclusion
+   excluded = set()
+   for letter in definitely_absent:
+       excluded.update(self._letter_index[letter])
+   exploration_pool = [w for w in dictionary if w not in excluded]
    ```
-   - Scores ALL dictionary words (not just Phase 1 candidates)
-   - Only excludes words containing ANY gray letter
-   - Allows exploration words (not in candidate set)
 
 2. **Compute Position Frequencies**:
    ```python
    position_freqs = stats.get_position_frequencies(candidates)
    ```
    - Uses Phase 1 candidates for frequency analysis
-   - Adaptive: switches to full dictionary if candidates < 10
+   - Adaptive: switches to full dictionary if candidates < 5 (lowered from 10)
 
-3. **Score Each Word**:
+3. **Detect Trap Patterns**:
    ```python
-   def _score_word(word, constraint, position_freqs, round_number):
-       score = position_score           # Letter frequency at each position
-             + state_weight_score       # Green/yellow/gray/unused weights
-             + exploration_bonus        # Unused letters (rounds 1-3)
-             - duplicate_penalty        # Duplicate letters (rounds 1-3)
+   if len(constraint.greens) >= 3:
+       # Identify variable positions and test letters
+       # Enable trap bonus for exploration words
+   ```
+
+4. **Score Each Word** (category-based):
+   ```python
+   def _score_word(word, context, is_exploration):
+       score = position_score × 2.0     # POSITION_WEIGHT_MULTIPLIER
+             + state_weight_score
+       if is_exploration:
+           score += exploration_bonus   # Explorations only
+           score -= duplicate_penalty   # Explorations only
+           if context.is_trap_situation:
+               score += trap_bonus      # Trap pattern handling
        return score
+   ```
+
+5. **Select Top N** (optimized):
+   ```python
+   # Use heapq.nlargest instead of full sort
+   # O(N + K log N) vs O(N log N)
+   top_candidates = heapq.nlargest(top_n, scored_candidates, key=...)
    ```
 
 **Scoring Components**:
 
 | Component | Formula | Purpose |
 |-----------|---------|---------|
-| **Position Score** | `Σ freq[pos][letter]` | Favor common letters at each position |
+| **Position Score** | `Σ freq[pos][letter] × 2.0` | Favor common letters (× 2 multiplier) |
 | **State Weight** | `Σ weight[letter_state]` | Prioritize green > yellow > unused > gray |
-| **Exploration Bonus** | `unused_count × 12.0` | Encourage new letters (rounds 1-3) |
-| **Duplicate Penalty** | `duplicate_count × 15.0` | Discourage repeats (rounds 1-3) |
+| **Exploration Bonus** | `unused_count × 12.0` | Encourage new letters (Explorations only) |
+| **Duplicate Penalty** | `dup_count × 15.0` | Discourage repeats (Explorations only) |
+| **Trap Bonus** | `coverage × 20.0` | Handle trap patterns (Explorations + greens≥3) |
 
-**Adaptive Behavior**:
-- **Rounds 1-3**: Exploration mode (high bonus, high penalty)
-- **Rounds 4-6**: Exploitation mode (focus on position scores)
+**Adaptive Behavior (v2 - Category-Based)**:
+- **Candidates**: Pure exploitation (position + state weights only)
+- **Explorations**: Pure exploration (full bonus/penalty logic)
 
 **Design Pattern**: **Strategy Pattern**
-- Different scoring strategies for early vs late rounds
+- Category-based scoring strategies (not round-based)
 - Configurable weights via `config/weights.json`
 - Easy to add new scoring components
 
@@ -231,7 +288,7 @@ class LetterStats:
 ```python
 def get_position_frequencies(
     candidates: List[str],
-    min_candidates_threshold: int = 10
+    min_candidates_threshold: int = 5  # Optimization 3: lowered from 10
 ) -> Dict[int, Dict[str, float]]:
 
     # Fallback to full dictionary if too few candidates
@@ -417,7 +474,7 @@ def get_position_frequencies(candidates):
 ### Complete Round Flow
 
 ```
-1. User inputs "CRANE" with colors [G, Y, Y, gray, gray]
+1. User inputs "CRANE" with colors [Blue, Orange, Orange, gray, gray]
    │
    ├─→ Create FeedbackRound("crane", [GREEN, YELLOW, YELLOW, GRAY, GRAY])
    │
@@ -425,7 +482,7 @@ def get_position_frequencies(candidates):
    │     greens: {0: 'c'}
    │     yellows: {'r': {1}, 'a': {2}}
    │     letter_counts: {'c': (1, None), 'r': (1, None), 'a': (1, None), 'n': (0, 0), 'e': (0, 0)}
-   │     grays: {'n', 'e'}
+   │     grays: (derived) {'n', 'e'}
    │
    ├─→ Merge with previous constraints (if any)
    │
@@ -434,17 +491,23 @@ def get_position_frequencies(candidates):
    │
    ├─→ PHASE 2: recommender.recommend(candidates, constraint, round=2)
    │     │
-   │     ├─→ Build scorable set (exclude words with 'n' or 'e')
+   │     ├─→ Build exploration pool via letter index (exclude 'n', 'e')
    │     │
    │     ├─→ Get position frequencies from candidates
    │     │
-   │     ├─→ Score all scorable words
+   │     ├─→ Detect trap patterns (if greens >= 3)
    │     │
-   │     └─→ Return top 10: [("cargo", 45.2), ("carbo", 43.8), ...]
+   │     ├─→ Score candidates (no exploration bonus)
+   │     │
+   │     ├─→ Score explorations (with exploration bonus)
+   │     │
+   │     └─→ Return split results:
+   │           {"candidates": [("cargo", 40.0), ...],
+   │            "explorations": [("stork", 78.4), ...]}
    │
    └─→ Update UI:
-       - Display 10 recommendations in 2×5 grid
-       - Show candidate count: "Candidates: 150"
+       - Display 5 Candidates (blue, left column)
+       - Display 5 Explorations (orange, right column)
        - Move focus to next row
 ```
 

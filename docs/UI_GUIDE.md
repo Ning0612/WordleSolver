@@ -121,37 +121,40 @@ resizable: False      # Fixed layout for consistency
 
 ### 1. Recommendation Area
 
-**Layout**: 2 columns × 5 rows Grid
+**Layout**: 2 separate columns (Candidates | Explorations), 5 rows each
 
-**Before (v1)**: Vertical list with Canvas + Scrollbar
+**Current (v2)**: Split columns with category separation
 ```python
-# Problems:
-# - Variable width boxes (inconsistent)
-# - Vertical scrolling (extra interaction)
-# - No numbering (hard to reference)
-```
+# Left column: Candidates (blue) - possible answers
+# Right column: Explorations (orange) - information gain words
 
-**After (v2)**: Fixed 2×5 Grid with uniform columns
-```python
+# Configure columns for equal width
 grid_frame.grid_columnconfigure(0, weight=1, uniform="rec")
 grid_frame.grid_columnconfigure(1, weight=1, uniform="rec")
 
-for i, (word, score) in enumerate(recs, 1):
-    row = (i - 1) // 2  # 0-4
-    col = (i - 1) % 2   # 0-1
-    item_frame.grid(row=row, column=col, padx=8, pady=4, sticky="nsew")
+# Candidates in left column (col=0)
+for i, (word, score) in enumerate(candidates_list[:5], 1):
+    row = i - 1  # 0-4
+    col = 0      # Left column
+    item_frame.grid(row=row, column=col, ...)
+
+# Explorations in right column (col=1)
+for i, (word, score) in enumerate(explorations_list[:5], 1):
+    row = i - 1  # 0-4
+    col = 1      # Right column
+    item_frame.grid(row=row, column=col, ...)
 ```
 
 **Benefits**:
+- ✅ Clear category separation (Candidates vs Explorations)
 - ✅ Consistent box widths via `uniform` parameter
-- ✅ Dense layout (2×5 vs 10×1)
-- ✅ Clear numbering (1-10)
+- ✅ 5 words per category (total 10 recommendations)
 - ✅ No scrolling needed
-- ✅ Easy visual scanning (left-right, top-bottom)
+- ✅ Easy strategy selection (left for answers, right for exploration)
 
 **Color Coding**:
-- **Blue Background** (#3B82F6): Phase 1 candidate (word IS in candidate set)
-- **Orange Background** (#F97316): Phase 2 exploration (word NOT in candidate set)
+- **Left Column - Blue Background** (#3B82F6): Candidates (Phase 1 filtered, possible answers)
+- **Right Column - Orange Background** (#F97316): Explorations (not candidates, for information gain)
 
 **Interaction**:
 - **Double-click** on word → auto-fill into focused row
@@ -168,6 +171,7 @@ height: 2 lines
 font: "Helvetica Neue", 24pt, bold
 border: 2px
 relief: FLAT (default), SUNKEN (focused)
+cursor: "hand2" (pointer cursor for clickable interaction)
 ```
 
 **Color States**:
@@ -179,8 +183,26 @@ relief: FLAT (default), SUNKEN (focused)
 
 **Visual Feedback**:
 - **Empty cells**: Dark gray background
-- **Filled cells**: Show feedback color (gray/yellow/green)
+- **Filled cells**: Show feedback color (gray/orange/blue)
 - **Focused cell**: SUNKEN relief with 4px border (clear indicator)
+- **Cursor**: Hand pointer on hover (indicates clickable)
+
+**Click-to-Cycle Feature (v2)**:
+```python
+# Each cell is clickable
+label.bind("<Button-1>", lambda e, r=row, c=col: self._on_cell_click(r, c))
+
+def _on_cell_click(self, row: int, col: int):
+    # 1. Move focus to clicked cell
+    self.state.focused_row = row
+    self.state.focused_col = col
+
+    # 2. Cycle the color (Gray → Orange → Blue → Gray)
+    self._cycle_current_color()
+
+    # 3. Return focus to master for keyboard input
+    self.master.focus_set()
+```
 
 **Grid Layout**:
 ```python
@@ -195,9 +217,13 @@ for row in range(6):
             bg=COLORS["letter_empty"],
             fg=COLORS["text"],
             relief=tk.FLAT,
-            bd=2
+            bd=2,
+            cursor="hand2"  # Pointer cursor for clickable cells
         )
         label.grid(row=row, column=col, padx=3, pady=3)
+
+        # Bind click event for color cycling
+        label.bind("<Button-1>", lambda e, r=row, c=col: self._on_cell_click(r, c))
 ```
 
 **Spacing**: 3px padding between cells for clear visual separation
@@ -284,7 +310,7 @@ self.master.bind_all("<Key>", self._on_key_press)  # Global capture
 
 ### Input Flow
 
-**Standard Flow**:
+**Standard Flow (Keyboard)**:
 ```
 1. Press Space → Set color (Gray/Orange/Blue)
 2. Type Letter → Input and advance
@@ -292,11 +318,19 @@ self.master.bind_all("<Key>", self._on_key_press)  # Global capture
 4. Press Enter → Submit and move to next row
 ```
 
+**Standard Flow (Mouse + Keyboard)**:
+```
+1. Click cell → Move focus and cycle color
+2. Type Letter → Input and advance
+3. Repeat for all 5 letters
+4. Press Enter → Submit and move to next row
+```
+
 **Alternative Flow** (edit previous row):
 ```
-1. Arrow Up/Down → Move to previous row
-2. Arrow Left/Right → Move to specific cell
-3. Space → Change color
+1. Arrow Up/Down (or click) → Move to previous row
+2. Arrow Left/Right (or click) → Move to specific cell
+3. Space (or click) → Change color
 4. Type Letter → Update letter
 5. Enter → Recalculate all rows
 ```
@@ -534,30 +568,30 @@ def _update_input_focus(self):
 
 ## Design Decisions & Rationale
 
-### Why 2×5 Grid Instead of 10×1 List?
+### Why Split Columns (Candidates | Explorations)?
 
 **Comparison**:
 ```
-10×1 List:           2×5 Grid:
-┌────────┐          ┌─────┬─────┐
-│1. SLATE│          │1. ..│2. ..│
-│2. CRANE│          │3. ..│4. ..│
-│3. STARE│          │5. ..│6. ..│
-│4. ADIEU│          │7. ..│8. ..│
-│5. AUDIO│          │9. ..│10...│
-│6. AROSE│          └─────┴─────┘
-│7. RAISE│
-│8. LATER│          Width: 2× smaller
-│9. IRATE│          Height: 2× smaller
-│10.SNARE│          Scan: Left-right natural
+Old (Interleaved):   New (Split Columns):
+┌────────┐          ┌──────────┬──────────┐
+│1. SLATE│          │CANDIDATES │EXPLORATIONS│
+│2. STORK│          │(Blue)     │(Orange)   │
+│3. CRANE│          ├──────────┼──────────┤
+│4. BUMPY│          │1. CARGO  │1. STORK  │
+│5. AROSE│          │2. CARBO  │2. BUMPY  │
+│6. FILMS│          │3. CAROL  │3. FILMS  │
+│7. CARGO│          │4. CORAL  │4. LIGHT  │
+│8. CARBO│          │5. CIRCA  │5. PLUMB  │
+│...     │          └──────────┴──────────┘
 └────────┘
+                     Strategy: Left=answers, Right=info
 ```
 
 **Benefits**:
-- Saves 50% vertical space
-- More compact layout
-- Easier visual scanning
-- Natural left-to-right reading
+- ✅ Clear category separation (answers vs exploration)
+- ✅ User can quickly choose strategy
+- ✅ No confusion about word purpose
+- ✅ Color coding reinforces semantics
 
 ---
 
