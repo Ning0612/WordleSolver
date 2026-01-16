@@ -1,7 +1,7 @@
 {
-  "name": "Wordle Solver - 智能解題助手",
+  "name": "Wordle Solver - Intelligent Solver Assistant",
   "short_name": "Wordle Solver",
-  "description": "使用演算法推薦最佳 Wordle 猜測",
+  "description": "Algorithm-powered word recommendations for Wordle",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -21,7 +21,11 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["games", "entertainment", "utilities"],
-  "lang": "zh-TW",
+  "categories": [
+    "games",
+    "entertainment",
+    "utilities"
+  ],
+  "lang": "en",
   "dir": "ltr"
 }

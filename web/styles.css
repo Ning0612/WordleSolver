@@ -89,6 +89,10 @@ header h1 {
   margin-bottom: 0.5rem;
 }
 
+.text-center {
+  text-align: center;
+}
+
 /* ===== 載入指示器 ===== */
 .loading {
   display: flex;
@@ -116,6 +120,161 @@ header h1 {
 .hidden {
   display: none !important;
 }
+
+/* ===== 使用說明 ===== */
+.instructions {
+  margin-bottom: var(--gap-large);
+  background: var(--color-recommend-bg);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.instructions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--gap-large);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.instructions-header:hover {
+  background: var(--color-bg-frame);
+}
+
+.instructions-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toggle-icon {
+  font-size: 0.75rem;
+  color: var(--color-secondary);
+  transition: transform 0.3s ease;
+}
+
+.instructions.collapsed .toggle-icon {
+  transform: rotate(-90deg);
+}
+
+.instructions-content {
+  max-height: 1000px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: max-height 0.4s ease, padding 0.4s ease;
+  padding: 0 var(--gap-large) var(--gap-medium) var(--gap-large);
+}
+
+.instructions.collapsed .instructions-content {
+  max-height: 0;
+  padding: 0 var(--gap-large);
+}
+
+.instruction-step {
+  margin-bottom: var(--gap-medium);
+  padding: var(--gap-small) var(--gap-medium);
+  background: var(--color-bg-frame);
+  border-radius: 6px;
+  border-left: 3px solid var(--color-blue);
+}
+
+.instruction-step:last-child {
+  margin-bottom: 0;
+}
+
+.instruction-step strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.instruction-step p {
+  margin: 0.25rem 0;
+  color: var(--color-secondary);
+  line-height: 1.5;
+  font-size: 0.85rem;
+}
+
+.instruction-step ul {
+  margin: 0.5rem 0 0.5rem 1.5rem;
+  color: var(--color-secondary);
+}
+
+.instruction-step li {
+  margin: 0.25rem 0;
+}
+
+.instruction-step em {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--color-secondary);
+  opacity: 0.8;
+}
+
+/* Color labels in instructions */
+.color-label {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.color-label.gray {
+  background: var(--color-gray);
+  color: white;
+}
+
+.color-label.yellow {
+  background: var(--color-orange);
+  color: white;
+}
+
+.color-label.green {
+  background: var(--color-blue);
+  color: white;
+}
+
+/* Recommendation labels in instructions */
+.rec-label {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: white;
+}
+
+.rec-label.candidate {
+  background: var(--color-candidate);
+}
+
+.rec-label.exploration {
+  background: var(--color-explore);
+}
+
+/* Keyboard key styling */
+kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  background: var(--color-letter-empty);
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
 
 /* ===== 字母網格 ===== */
 .grid-section {
@@ -227,6 +386,10 @@ header h1 {
   min-width: 60px;
 }
 
+.key-large-large {
+  min-width: 200px;
+}
+
 /* ===== 控制按鈕 ===== */
 .controls {
   display: flex;
@@ -315,12 +478,14 @@ header h1 {
   margin-bottom: var(--gap-medium);
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--gap-medium);
   color: var(--color-text);
 }
 
 .rec-legend {
   display: flex;
+  justify-content: center;
   gap: var(--gap-large);
   margin-bottom: var(--gap-medium);
   font-size: 0.9rem;
@@ -369,7 +534,7 @@ header h1 {
 
 .rec-item {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   padding: 10px 12px;
   background: var(--color-bg-frame);

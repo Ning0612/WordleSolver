@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="description" content="智能 Wordle 解題助手 - 使用演算法推薦最佳猜測">
+  <meta name="description" content="Intelligent Wordle Solver - Algorithm-powered word recommendations">
   <meta name="theme-color" content="#6aaa64">
   <title>Wordle Solver</title>
   <link rel="stylesheet" href="styles.css">
@@ -17,21 +17,65 @@
     <!-- 標題 -->
     <header>
       <h1>Wordle Solver</h1>
-      <p class="subtitle">智能解題助手</p>
+      <p class="subtitle">Intelligent Solver Assistant</p>
     </header>
+
+    <!-- Usage Instructions (Collapsible) -->
+    <section id="instructions" class="instructions collapsed">
+      <div class="instructions-header" id="instructions-toggle">
+        <h2>📖 How to Use</h2>
+        <span class="toggle-icon">▼</span>
+      </div>
+      <div class="instructions-content" id="instructions-content">
+        <div class="instruction-step">
+          <strong>1. ⌨️ Enter Letters</strong>
+          <p>Type using your keyboard or click the virtual keyboard below. Letters will be automatically added to the
+            current row.</p>
+        </div>
+        <div class="instruction-step">
+          <strong>2. 🎨 Mark Colors</strong>
+          <p>Click each cell to cycle through colors: <span class="color-label gray">Gray</span> → <span
+              class="color-label yellow">Yellow</span> → <span class="color-label green">Green</span></p>
+          <ul>
+            <li><span class="color-label gray">Gray</span>: Letter not in the answer</li>
+            <li><span class="color-label yellow">Yellow</span>: Letter in answer, wrong position</li>
+            <li><span class="color-label green">Green</span>: Letter in answer, correct position</li>
+          </ul>
+          <p><em>Tip: Press <kbd>Space</kbd> to cycle colors for the current cell.</em></p>
+        </div>
+        <div class="instruction-step">
+          <strong>3. ✅ Submit Your Guess</strong>
+          <p>After marking all 5 letters, click <strong>"Submit Current Row"</strong> or press <kbd>Enter</kbd> to get
+            recommendations.</p>
+        </div>
+        <div class="instruction-step">
+          <strong>4. 💡 Use Recommendations</strong>
+          <p>Two types of word suggestions will appear:</p>
+          <ul>
+            <li><span class="rec-label candidate">Candidate</span>: Possible answers based on current clues</li>
+            <li><span class="rec-label exploration">Exploration</span>: Words to gather more information</li>
+          </ul>
+          <p><em>Click any recommended word to auto-fill it in the next row.</em></p>
+        </div>
+        <div class="instruction-step">
+          <strong>5. 🔄 Reset Game</strong>
+          <p>Click the <strong>"Reset"</strong> button to clear the entire grid and start a new game.</p>
+        </div>
+      </div>
+    </section>
 
     <!-- 載入指示器 -->
     <div id="loading-indicator" class="loading">
       <div class="spinner"></div>
-      <p>載入中...</p>
+      <p>Loading...</p>
     </div>
 
     <!-- 主要內容（初始隱藏） -->
     <main id="main-content" class="hidden">
       <!-- 推薦清單（移至頂部） -->
       <section class="recommendations">
-        <p class="disclaimer">Independent Wordle-solving tool. Not affiliated with The New York Times.</p>
-        <h2>Word Analysis & Recommendations</h2>
+        <p class="disclaimer text-center">Independent Wordle-solving tool. Not affiliated with The New York Times.</p>
+        <h2 class="text-center">Word Analysis & Recommendations</h2>
         <div class="rec-legend">
           <div class="legend-item">
             <div class="legend-dot candidate"></div>
@@ -83,9 +127,9 @@
           <button class="key" data-key="J">J</button>
           <button class="key" data-key="K">K</button>
           <button class="key" data-key="L">L</button>
+          <button class="key" data-key="Backspace">⌫</button>
         </div>
         <div class="keyboard-row">
-          <button class="key key-large" data-key="Backspace">⌫</button>
           <button class="key" data-key="Z">Z</button>
           <button class="key" data-key="X">X</button>
           <button class="key" data-key="C">C</button>
@@ -93,21 +137,21 @@
           <button class="key" data-key="B">B</button>
           <button class="key" data-key="N">N</button>
           <button class="key" data-key="M">M</button>
+          <button class="key" data-key="ArrowUp">↑</button>
+          <button class="key key-large" data-key="Enter">Enter</button>
         </div>
         <div class="keyboard-row">
+          <button class="key key-large-large" data-key=" ">Space</button>
           <button class="key" data-key="ArrowLeft">←</button>
-          <button class="key" data-key="ArrowUp">↑</button>
           <button class="key" data-key="ArrowDown">↓</button>
           <button class="key" data-key="ArrowRight">→</button>
-          <button class="key key-large" data-key=" ">Space</button>
-          <button class="key key-large" data-key="Enter">Enter</button>
         </div>
       </section>
 
       <!-- 控制按鈕 -->
       <section class="controls">
-        <button id="submit-btn" class="btn btn-primary">提交當前行</button>
-        <button id="reset-btn" class="btn btn-secondary">重新開始</button>
+        <button id="submit-btn" class="btn btn-primary">Submit Current Row</button>
+        <button id="reset-btn" class="btn btn-secondary">Reset</button>
       </section>
     </main>
 
@@ -116,7 +160,9 @@
 
     <!-- 頁尾 -->
     <footer>
-      <p>Made with ❤️ using <a href="https://pyodide.org" target="_blank">Pyodide</a></p>
+      <p>Made with ❤️ using <a href="https://pyodide.org" target="_blank" rel="noopener noreferrer">Pyodide</a></p>
+      <p><a href="https://github.com/Ning0612/WordleSolver" target="_blank" rel="noopener noreferrer">GitHub
+          Repository</a></p>
     </footer>
   </div>
 

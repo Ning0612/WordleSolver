@@ -36,7 +36,7 @@ const PERF = {
 
 // ===== 載入初始推薦 =====
 async function loadInitialRecommendations() {
-  console.log('[Init] 載入初始推薦...');
+  console.log('[Init] Loading initial recommendations...');
 
   try {
     const result = await STATE.pyodide.runPythonAsync(`
@@ -56,19 +56,19 @@ json.dumps({
     `);
 
     const data = JSON.parse(result);
-    console.log('[Init] 初始推薦載入完成:', data);
+    console.log('[Init] Initial recommendations loaded:', data);
 
     // 更新 UI
     updateRecommendations(data.candidates, data.explorations);
   } catch (error) {
-    console.error('[Init] 載入初始推薦失敗:', error);
+    console.error('[Init] Failed to load initial recommendations:', error);
     // 不影響主流程，只記錄錯誤
   }
 }
 
 // ===== 初始化 =====
 async function init() {
-  console.log('[Init] 開始初始化...');
+  console.log('[Init] Starting initialization...');
 
   // 取得 DOM 元素
   DOM.loadingIndicator = document.getElementById('loading-indicator');
@@ -88,11 +88,13 @@ async function init() {
   DOM.resetBtn.addEventListener('click', handleReset);
   setupKeyboard();
   setupGridEventDelegation();  // 使用事件委派優化網格點擊
+  setupInstructions();  // 設定使用說明摺疊功能
+
 
   // 載入 Pyodide
   try {
     await initPyodide();
-    console.log('[Init] Pyodide 載入完成');
+    console.log('[Init] Pyodide loaded successfully');
 
     // 顯示主要內容
     DOM.loadingIndicator.classList.add('hidden');
@@ -104,8 +106,8 @@ async function init() {
     // 註冊 Service Worker
     await registerServiceWorker();
   } catch (error) {
-    showError(`載入失敗: ${error.message}`);
-    console.error('[Init] 錯誤:', error);
+    showError(`Loading failed: ${error.message}`);
+    console.error('[Init] Error:', error);
   }
 }
 
@@ -139,6 +141,36 @@ function setupGridEventDelegation() {
     handleCellClick(row, col);
   });
 }
+
+// ===== 設定使用說明摺疊功能 =====
+function setupInstructions() {
+  const instructionsSection = document.getElementById('instructions');
+  const instructionsToggle = document.getElementById('instructions-toggle');
+
+  if (!instructionsSection || !instructionsToggle) return;
+
+  // 從 localStorage 讀取狀態（預設為展開）
+  const isCollapsed = localStorage.getItem('instructionsCollapsed') === 'true';
+
+  if (isCollapsed) {
+    instructionsSection.classList.add('collapsed');
+  }
+
+  // 點擊切換
+  instructionsToggle.addEventListener('click', () => {
+    const willCollapse = !instructionsSection.classList.contains('collapsed');
+
+    if (willCollapse) {
+      instructionsSection.classList.add('collapsed');
+    } else {
+      instructionsSection.classList.remove('collapsed');
+    }
+
+    // 儲存狀態到 localStorage
+    localStorage.setItem('instructionsCollapsed', willCollapse.toString());
+  });
+}
+
 
 // ===== 格子點擊處理 =====
 function handleCellClick(row, col) {
@@ -332,7 +364,7 @@ function validateFeedback(guess, feedback) {
     const totalCount = status.green + status.yellow + status.gray;
     if (totalCount === 1 && hasPositive && hasGray) {
       // 不可能同時是存在和不存在（單個字母的情況）
-      return `⚠️ 字母 '${letter.toUpperCase()}' 的顏色標記矛盾`;
+      return `⚠️ Letter '${letter.toUpperCase()}' has conflicting color markings`;
     }
 
     // 對於重複字母（totalCount > 1），允許部分是綠色/黃色，部分是灰色
@@ -345,7 +377,7 @@ function validateFeedback(guess, feedback) {
 
 // ===== 提交當前行 =====
 async function handleSubmit() {
-  console.log('[Submit] 提交所有完整行');
+  console.log('[Submit] Submitting all complete rows');
 
   // 掃描所有 6 行，找出完整的 5 字母行
   const completeRows = [];
@@ -361,7 +393,7 @@ async function handleSubmit() {
       if (feedback.every(state => state && state !== '')) {
         completeRows.push({ row, guess, feedback });
       } else {
-        showError(`第 ${row + 1} 行有未標記顏色的字母，請為所有字母標記顏色`);
+        showError(`Row ${row + 1} has unmarked letters. Please mark all letters with colors.`);
         return;
       }
     }
@@ -369,17 +401,17 @@ async function handleSubmit() {
 
   // 如果沒有完整行，提示用戶
   if (completeRows.length === 0) {
-    showError('請至少輸入一個完整的 5 字母單字並標記顏色');
+    showError('Please enter at least one complete 5-letter word and mark colors.');
     return;
   }
 
-  console.log('[Submit] 找到', completeRows.length, '個完整行');
+  console.log('[Submit] Found', completeRows.length, 'complete rows');
 
   // ===== 前端預先驗證（避免不必要的後端計算）=====
   for (const { row, guess, feedback } of completeRows) {
     const validationError = validateFeedback(guess, feedback);
     if (validationError) {
-      showError(`第 ${row + 1} 行標記錯誤: ${validationError}`);
+      showError(`Row ${row + 1} marking error: ${validationError}`);
       return;
     }
   }
@@ -387,7 +419,7 @@ async function handleSubmit() {
   // 呼叫 Python 核心處理所有完整行
   try {
     DOM.submitBtn.disabled = true;
-    DOM.submitBtn.textContent = '計算中...';
+    DOM.submitBtn.textContent = 'Calculating...';
 
     PERF.computeStart = performance.now();
 
@@ -442,29 +474,29 @@ async function handleSubmit() {
       errorMsg.includes('約束條件矛盾') ||
       (errorMsg.includes('min=') && errorMsg.includes('max='))) {
       // 約束條件衝突（例如同一字母既是黃色又是灰色）
-      errorMsg = `⚠️ 顏色標記設定有誤\n\n這通常是因為同一字母被標記了衝突的顏色（例如同時標記為黃色和灰色）。\n請檢查您的顏色標記是否正確。`;
+      errorMsg = `⚠️ Color marking error\n\nThis is usually because the same letter has conflicting color markings (e.g., marked as both yellow and gray).\nPlease check your color markings.`;
     } else if (errorMsg.includes('Conflicting')) {
-      // 其他衝突錯誤（綠色位置衝突、綠色/黃色衝突等）
-      errorMsg = `⚠️ 顏色標記設定有誤\n\n請檢查您的顏色標記是否正確。`;
+      // Other conflict errors (green position conflicts, green/yellow conflicts, etc.)
+      errorMsg = `⚠️ Color marking error\n\nPlease check your color markings.`;
     } else if (errorMsg.includes('empty') ||
       errorMsg.includes('no candidates') ||
       errorMsg.includes('找不到符合條件的候選單字') ||
       errorMsg.includes('IndexError')) {
       // 沒有候選單字（可能是標記錯誤或答案不在詞庫中）
-      errorMsg = `⚠️ 找不到符合條件的單字\n\n這可能是因為：\n1. 顏色標記有誤，導致條件互相矛盾\n2. 答案不在本詞庫中（本詞庫包含常見的 5 字母英文單字）\n\n請檢查您的顏色標記是否正確。`;
+      errorMsg = `⚠️ No matching words found\n\nThis could be because:\n1. Color markings are incorrect, causing contradictory conditions\n2. The answer is not in this dictionary (this dictionary contains common 5-letter English words)\n\nPlease check your color markings.`;
     }
 
-    showError(`計算錯誤: ${errorMsg}`);
+    showError(`Calculation error: ${errorMsg}`);
     console.error('[Submit] 完整錯誤訊息:', error);  // 完整錯誤仍記錄在 console 供除錯
   } finally {
     DOM.submitBtn.disabled = false;
-    DOM.submitBtn.textContent = '提交當前行';
+    DOM.submitBtn.textContent = 'Submit Current Row';
   }
 }
 
 // ===== 重置遊戲 =====
 async function handleReset() {
-  console.log('[Reset] 重置遊戲');
+  console.log('[Reset] Resetting game');
 
   // 清空網格
   STATE.grid.forEach(cell => {
@@ -511,7 +543,7 @@ function showError(message) {
   // 添加關閉按鈕
   DOM.errorMessage.innerHTML = `
     ${formattedMessage}
-    <button class="error-close" aria-label="關閉錯誤訊息" title="點擊關閉">×</button>
+    <button class="error-close" aria-label="Close error message" title="Click to close">×</button>
   `;
   DOM.errorMessage.classList.remove('hidden');
 
@@ -541,29 +573,29 @@ function showError(message) {
 
 // ===== Pyodide 初始化 =====
 async function initPyodide() {
-  console.log('[Pyodide] 開始載入 Pyodide...');
+  console.log('[Pyodide] Starting to load Pyodide...');
   PERF.pyodideLoadStart = performance.now();
 
   // 步驟 1: 載入 Pyodide
   STATE.pyodide = await loadPyodide({
     indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/"
   });
-  console.log('[Pyodide] Pyodide 載入完成');
+  console.log('[Pyodide] Pyodide loaded');
 
   // 步驟 2: 載入字典
-  console.log('[Pyodide] 載入字典...');
+  console.log('[Pyodide] Loading dictionary...');
   const dictResponse = await fetch('assets/five_letter_words.json');
   if (!dictResponse.ok) {
-    throw new Error(`無法載入字典: ${dictResponse.status} ${dictResponse.statusText}`);
+    throw new Error(`Cannot load dictionary: ${dictResponse.status} ${dictResponse.statusText}`);
   }
   const words = await dictResponse.json();
-  console.log(`[Pyodide] 字典載入完成: ${words.length} 個單字`);
+  console.log(`[Pyodide] Dictionary loaded: ${words.length} words`);
 
   // 將字典存到 Python 全域變數
   STATE.pyodide.globals.set('WORD_LIST', words);
 
   // 步驟 3: 載入 Python 核心模組
-  console.log('[Pyodide] 載入 Python 核心模組...');
+  console.log('[Pyodide] Loading Python core modules...');
 
   const modules = [
     'constraints.py',
@@ -597,16 +629,16 @@ async function initPyodide() {
     }
 
     if (!code) {
-      throw new Error(`無法載入 ${moduleName}: 已嘗試路徑 ${possiblePaths.join(', ')}`);
+      throw new Error(`Cannot load ${moduleName}: tried paths ${possiblePaths.join(', ')}`);
     }
 
     // 寫入 Pyodide 虛擬檔案系統
     STATE.pyodide.FS.writeFile(`/home/pyodide/${moduleName}`, code);
-    console.log(`[Pyodide] 載入完成: ${moduleName} (從 ${loadedFrom})`);
+    console.log(`[Pyodide] Loaded: ${moduleName} (from ${loadedFrom})`);
   }
 
   // 步驟 4: 初始化 WordleCore
-  console.log('[Pyodide] 初始化 WordleCore...');
+  console.log('[Pyodide] Initializing WordleCore...');
   await STATE.pyodide.runPythonAsync(`
 import sys
 sys.path.insert(0, '/home/pyodide')
@@ -687,7 +719,7 @@ print('[Python] Python 核心初始化完成')
 
   PERF.pyodideLoadEnd = performance.now();
   console.log(`[Perf] Pyodide 載入時間: ${(PERF.pyodideLoadEnd - PERF.pyodideLoadStart).toFixed(0)}ms`);
-  console.log('[Pyodide] 初始化完成');
+  console.log('[Pyodide] Initialization complete');
 }
 
 // ===== 提交一輪到 Python 核心 =====
@@ -720,13 +752,13 @@ json.dumps({
 // ===== 更新推薦清單 =====
 // 優化: 使用 DocumentFragment 批次插入,減少 reflow 次數 (10次 → 2次)
 function updateRecommendations(candidates, explorations) {
-  console.log('[UI] 更新推薦清單:', candidates.length, '候選,', explorations.length, '探索');
+  console.log('[UI] Updating recommendations:', candidates.length, 'candidates,', explorations.length, 'explorations');
 
   // 檢查是否只有唯一候選
   if (candidates.length === 1) {
     const [word, score] = candidates[0];
     setTimeout(() => {
-      alert(`🎉 找到唯一答案！\n\n答案很可能是: ${word.toUpperCase()}\n\n信心分數: ${score.toFixed(1)}`);
+      alert(`🎉 Unique answer found!\n\nThe answer is likely: ${word.toUpperCase()}\n\nConfidence score: ${score.toFixed(1)}`);
     }, 100);
   }
 
@@ -737,7 +769,6 @@ function updateRecommendations(candidates, explorations) {
     item.className = 'rec-item candidate';
     item.innerHTML = `
       <span class="rec-word">${index + 1}. ${word.toUpperCase()}</span>
-      <span class="rec-score">${score.toFixed(1)}</span>
     `;
 
     item.addEventListener('click', () => {
@@ -754,7 +785,6 @@ function updateRecommendations(candidates, explorations) {
     item.className = 'rec-item exploration';
     item.innerHTML = `
       <span class="rec-word">${index + 1}. ${word.toUpperCase()}</span>
-      <span class="rec-score">${score.toFixed(1)}</span>
     `;
 
     item.addEventListener('click', () => {
@@ -800,7 +830,7 @@ async function registerServiceWorker() {
         newWorker.addEventListener('statechange', () => {
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
             // 有新版本可用
-            if (confirm('有新版本可用，是否重新載入？')) {
+            if (confirm('New version available. Reload now?')) {
               newWorker.postMessage('skipWaiting');
               window.location.reload();
             }
