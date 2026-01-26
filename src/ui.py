@@ -204,14 +204,28 @@ class WordleSolverApp:
         legend_frame = tk.Frame(frame, bg=COLORS["recommend_bg"])
         legend_frame.pack(pady=(0, 5))
 
+        # Create candidate legend with count
+        legend_candidate_frame = tk.Frame(legend_frame, bg=COLORS["recommend_bg"])
+        legend_candidate_frame.pack(side=tk.LEFT, padx=10)
+
+        # Store reference to candidate count label
+        self.candidate_count_label = tk.Label(
+            legend_candidate_frame,
+            text="",
+            font=("Helvetica Neue", 12),
+            bg=COLORS["recommend_bg"],
+            fg=COLORS["recommend_candidate"]
+        )
+        self.candidate_count_label.pack(side=tk.LEFT)
+
         legend_candidate = tk.Label(
-            legend_frame,
+            legend_candidate_frame,
             text="● Candidate",
             font=("Helvetica Neue", 12),
             bg=COLORS["recommend_bg"],
             fg=COLORS["recommend_candidate"]
         )
-        legend_candidate.pack(side=tk.LEFT, padx=10)
+        legend_candidate.pack(side=tk.LEFT)
 
         legend_explore = tk.Label(
             legend_frame,
@@ -649,6 +663,12 @@ class WordleSolverApp:
             widget.destroy()
 
         self.recommend_labels.clear()
+
+        # Update candidate count label
+        candidates_count = len(self.state.candidates)
+        self.candidate_count_label.config(
+            text=f"{candidates_count} " if candidates_count > 0 else ""
+        )
 
         try:
             # Get recommendations (top 5 each category)

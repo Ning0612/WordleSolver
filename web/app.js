@@ -50,6 +50,7 @@ recommendations = _recommender.recommend(
     top_n=10
 )
 json.dumps({
+    'candidates_count': len(_word_list),
     'candidates': recommendations['candidates'][:5],
     'explorations': recommendations['explorations'][:5]
 })
@@ -58,8 +59,8 @@ json.dumps({
     const data = JSON.parse(result);
     console.log('[Init] Initial recommendations loaded:', data);
 
-    // 更新 UI
-    updateRecommendations(data.candidates, data.explorations);
+    // 更新 UI (傳入候選單字總數)
+    updateRecommendations(data.candidates, data.explorations, data.candidates_count);
   } catch (error) {
     console.error('[Init] Failed to load initial recommendations:', error);
     // 不影響主流程，只記錄錯誤
@@ -742,8 +743,8 @@ json.dumps({
   const data = JSON.parse(result);
   console.log('[Python] 結果:', data);
 
-  // 更新 UI
-  updateRecommendations(data.candidates, data.explorations);
+  // 更新 UI (傳入候選單字總數)
+  updateRecommendations(data.candidates, data.explorations, data.candidates_count);
 
   // 記錄歷史
   STATE.history.push({ guess, feedback });
@@ -751,8 +752,16 @@ json.dumps({
 
 // ===== 更新推薦清單 =====
 // 優化: 使用 DocumentFragment 批次插入,減少 reflow 次數 (10次 → 2次)
-function updateRecommendations(candidates, explorations) {
+function updateRecommendations(candidates, explorations, candidatesCount = null) {
   console.log('[UI] Updating recommendations:', candidates.length, 'candidates,', explorations.length, 'explorations');
+
+  // 更新候選單字數量顯示
+  const candidateCountEl = document.getElementById('candidate-count');
+  if (candidateCountEl) {
+    // 如果有提供 candidatesCount，使用它；否則使用 candidates.length
+    const count = candidatesCount !== null ? candidatesCount : candidates.length;
+    candidateCountEl.textContent = count > 0 ? `${count} ` : '';
+  }
 
   // 檢查是否只有唯一候選
   if (candidates.length === 1) {
