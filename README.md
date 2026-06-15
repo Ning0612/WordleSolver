@@ -5,7 +5,7 @@
 This project provides **two versions**:
 
 - **🖥️ [Desktop App](#quick-start)** - Tkinter GUI with advanced keyboard controls
-- **🌐 [Web App](web/README.md)** - Browser-based PWA powered by Pyodide ([Try it live](https://ning0612.github.io/WordleSolver/))
+- **🌐 [Web App](web/README.md)** - Browser-based PWA powered by Pyodide ([Try it live](https://ning0612.github.io/wordle-solver/))
 
 Both versions share the same intelligent constraint-based solving algorithm.
 
@@ -67,8 +67,8 @@ The word list has been filtered to include only five-letter alphabetic English w
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/WordleSolver.git
-   cd WordleSolver
+   git clone https://github.com/Ning0612/wordle-solver.git
+   cd wordle-solver
    ```
 
 2. **Create virtual environment** (recommended)
@@ -145,7 +145,7 @@ python -m src.main
 ## Project Structure
 
 ```
-WordleSolver/
+wordle-solver/
 ├── src/                  # Python core modules (shared by both versions)
 │   ├── main.py           # CLI application entry point
 │   ├── ui.py             # Tkinter GUI implementation
