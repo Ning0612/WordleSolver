@@ -1,5 +1,8 @@
 # Benchmark Failure Analysis
 
+For the stage-by-stage benchmark score history, see
+[`benchmark_history.md`](benchmark_history.md).
+
 ## Baseline
 
 The original benchmark used a strict candidate-first strategy: always choose the

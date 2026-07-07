@@ -65,6 +65,7 @@ This repository also includes a reproducible Wordle answer benchmark:
 - Summary: [`data/benchmark/wordle_benchmark_summary.json`](data/benchmark/wordle_benchmark_summary.json)
 - Report: [`docs/benchmark.md`](docs/benchmark.md)
 - Failure analysis: [`docs/benchmark_failure_analysis.md`](docs/benchmark_failure_analysis.md)
+- Benchmark history: [`docs/benchmark_history.md`](docs/benchmark_history.md)
 
 Rebuild it with:
 
