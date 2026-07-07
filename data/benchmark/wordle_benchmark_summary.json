@@ -1,0 +1,260 @@
+{
+  "dataset_size": 2309,
+  "solved": 2121,
+  "failed": 188,
+  "success_rate": 0.918579,
+  "average_attempts_solved": 4.328147,
+  "median_attempts_solved": 4,
+  "average_attempts_all": 4.545691,
+  "distribution": {
+    "1": 0,
+    "2": 33,
+    "3": 378,
+    "4": 846,
+    "5": 588,
+    "6": 276,
+    "7": 188
+  },
+  "failure_cases": [
+    {
+      "answer": "sissy",
+      "guesses": [
+        "cares",
+        "soily",
+        "sinky",
+        "sixty",
+        "sippy",
+        "sibby"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "marry",
+      "guesses": [
+        "cares",
+        "bardy",
+        "marly",
+        "marty",
+        "marvy",
+        "maray"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "staff",
+      "guesses": [
+        "cares",
+        "shant",
+        "stail",
+        "staup",
+        "stagy",
+        "staab"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "paper",
+      "guesses": [
+        "cares",
+        "taver",
+        "lager",
+        "waker",
+        "hayer",
+        "japer"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "crazy",
+      "guesses": [
+        "cares",
+        "chark",
+        "craig",
+        "crawl",
+        "crany",
+        "crapy"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "linen",
+      "guesses": [
+        "cares",
+        "toled",
+        "gimel",
+        "lifen",
+        "liken",
+        "liven"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "booby",
+      "guesses": [
+        "cares",
+        "bolty",
+        "boody",
+        "booky",
+        "boomy",
+        "boozy"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "stout",
+      "guesses": [
+        "cares",
+        "soily",
+        "shout",
+        "skout",
+        "snout",
+        "spout"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "crass",
+      "guesses": [
+        "cares",
+        "crabs",
+        "crags",
+        "crams",
+        "craps",
+        "craws"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "start",
+      "guesses": [
+        "cares",
+        "spart",
+        "skart",
+        "slart",
+        "smart",
+        "swart"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "goner",
+      "guesses": [
+        "cares",
+        "tiver",
+        "foder",
+        "honer",
+        "boner",
+        "moner"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "gamma",
+      "guesses": [
+        "cares",
+        "manly",
+        "tambo",
+        "damia",
+        "hamza",
+        "pampa"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "hatch",
+      "guesses": [
+        "cares",
+        "macho",
+        "latch",
+        "batch",
+        "datch",
+        "gatch"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "tweed",
+      "guesses": [
+        "cares",
+        "toled",
+        "tined",
+        "tubed",
+        "typed",
+        "tewed"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "jaunt",
+      "guesses": [
+        "cares",
+        "manly",
+        "baton",
+        "daunt",
+        "gaunt",
+        "haunt"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "finer",
+      "guesses": [
+        "cares",
+        "tiver",
+        "liner",
+        "diner",
+        "piner",
+        "miner"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "surer",
+      "guesses": [
+        "cares",
+        "sired",
+        "strew",
+        "sorel",
+        "syren",
+        "sfree"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "craze",
+      "guesses": [
+        "cares",
+        "crane",
+        "craie",
+        "crake",
+        "crape",
+        "crate"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "skill",
+      "guesses": [
+        "cares",
+        "soily",
+        "shilf",
+        "stilb",
+        "spill",
+        "swill"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "dodge",
+      "guesses": [
+        "cares",
+        "boite",
+        "molge",
+        "podge",
+        "fodge",
+        "hodge"
+      ],
+      "rounds": 6
+    }
+  ]
+}

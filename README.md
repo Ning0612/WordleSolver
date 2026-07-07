@@ -56,6 +56,22 @@ This project uses English word lists from the [Wordnik wordlist repository](http
 
 The word list has been filtered to include only five-letter alphabetic English words suitable for Wordle-style puzzle solving. For details on third-party attributions, see [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
 
+## Benchmark Data
+
+This repository also includes a reproducible Wordle answer benchmark:
+
+- Answer list input: `data/wordle_answers.txt` (generated locally; not committed)
+- Raw trace: `data/benchmark/wordle_benchmark_raw.jsonl` (generated locally; not committed)
+- Summary: [`data/benchmark/wordle_benchmark_summary.json`](data/benchmark/wordle_benchmark_summary.json)
+- Report: [`docs/benchmark.md`](docs/benchmark.md)
+
+Rebuild it with:
+
+```bash
+.\.venv\bin\python.exe scripts\build_wordle_answers.py --source-repo <path-to-wordle-answers> --output data\wordle_answers.txt
+.\.venv\bin\python.exe scripts\benchmark_wordle.py --answers data\wordle_answers.txt --output-dir data\benchmark --report docs\benchmark.md
+```
+
 ## Quick Start
 
 ### Prerequisites
@@ -266,12 +282,14 @@ python src/stats.py
 
 ## Algorithm Performance
 
-Tested on the full Wordle answer list (2,315 words):
+Benchmark run against 2,309 answer entries from the reproducible answer archive:
 
-- **Average solve**: 3.6 rounds
-- **Success rate**: 99.8% (solved within 6 rounds)
-- **Median candidates** after Round 1: ~150 words
-- **Median candidates** after Round 2: ~12 words
+- **Solved**: 2,121
+- **Failed**: 188
+- **Success rate**: 91.86% within 6 rounds
+- **Average attempts (solved)**: 4.33
+- **Median attempts (solved)**: 4
+- **Average attempts (all)**: 4.55
 
 ## Contributing
 
