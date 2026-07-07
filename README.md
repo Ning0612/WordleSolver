@@ -64,6 +64,7 @@ This repository also includes a reproducible Wordle answer benchmark:
 - Raw trace: `data/benchmark/wordle_benchmark_raw.jsonl` (generated locally; not committed)
 - Summary: [`data/benchmark/wordle_benchmark_summary.json`](data/benchmark/wordle_benchmark_summary.json)
 - Report: [`docs/benchmark.md`](docs/benchmark.md)
+- Coverage-adjusted report: [`data/benchmark/coverage_adjusted/benchmark.md`](data/benchmark/coverage_adjusted/benchmark.md)
 - Failure analysis: [`docs/benchmark_failure_analysis.md`](docs/benchmark_failure_analysis.md)
 - Benchmark history: [`docs/benchmark_history.md`](docs/benchmark_history.md)
 
@@ -72,6 +73,12 @@ Rebuild it with:
 ```bash
 python scripts/build_wordle_answers.py --source-repo <path-to-wordle-answers> --output data/wordle_answers.txt
 python scripts/benchmark_wordle.py --answers data/wordle_answers.txt --strategy split-quality --compare-baseline --output-dir data/benchmark --report docs/benchmark.md
+```
+
+Coverage-adjusted local runs must use a separate output directory:
+
+```bash
+python scripts/benchmark_wordle.py --answers data/wordle_answers.txt --strategy split-quality --compare-baseline --include-missing-answers --output-dir data/benchmark/coverage_adjusted --report data/benchmark/coverage_adjusted/benchmark.md --diagnostics-dir data/benchmark/diagnostics
 ```
 
 ## Quick Start
@@ -292,7 +299,15 @@ Benchmark run against 2,309 answer entries from the reproducible answer archive 
 - **Average attempts (solved)**: 4.26
 - **Median attempts (solved)**: 4.0
 - **Average attempts (all)**: 4.30
+- **Benchmark duration**: 00:13:25.133 total, 0.348693 seconds per word
 - **Dictionary coverage**: 9 answer entries are not in the solver dictionary; all 9 are among the failures.
+
+Coverage-adjusted local run:
+
+- **Solved**: 2,280
+- **Failed**: 29
+- **Success rate**: 98.74% within 6 rounds
+- **Benchmark duration**: 00:13:25.843 total, 0.349001 seconds per word
 
 Baseline comparison:
 

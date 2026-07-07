@@ -1,20 +1,20 @@
 {
   "strategy": "split-quality",
   "dataset_size": 2309,
-  "solved": 2271,
-  "failed": 38,
-  "success_rate": 0.983543,
-  "average_attempts_solved": 4.256715,
-  "median_attempts_solved": 4,
-  "average_attempts_all": 4.301862,
+  "solved": 2280,
+  "failed": 29,
+  "success_rate": 0.98744,
+  "average_attempts_solved": 4.259649,
+  "median_attempts_solved": 4.0,
+  "average_attempts_all": 4.294067,
   "distribution": {
     "1": 0,
     "2": 31,
     "3": 304,
-    "4": 1097,
-    "5": 729,
-    "6": 110,
-    "7": 38
+    "4": 1101,
+    "5": 730,
+    "6": 114,
+    "7": 29
   },
   "failure_cases": [
     {
@@ -90,15 +90,6 @@
       "rounds": 6
     },
     {
-      "answer": "rehab",
-      "guesses": [
-        "cares",
-        "drate",
-        "reban"
-      ],
-      "rounds": 3
-    },
-    {
       "answer": "ruler",
       "guesses": [
         "cares",
@@ -121,17 +112,6 @@
         "moper"
       ],
       "rounds": 6
-    },
-    {
-      "answer": "geeky",
-      "guesses": [
-        "cares",
-        "boite",
-        "wendy",
-        "kelpy",
-        "yeuky"
-      ],
-      "rounds": 5
     },
     {
       "answer": "amass",
@@ -170,28 +150,6 @@
       "rounds": 6
     },
     {
-      "answer": "penne",
-      "guesses": [
-        "cares",
-        "boite",
-        "fudge",
-        "helve",
-        "neeze"
-      ],
-      "rounds": 5
-    },
-    {
-      "answer": "ramen",
-      "guesses": [
-        "cares",
-        "taver",
-        "midgy",
-        "ramex",
-        "ramee"
-      ],
-      "rounds": 5
-    },
-    {
       "answer": "sneer",
       "guesses": [
         "cares",
@@ -228,15 +186,6 @@
       "rounds": 6
     },
     {
-      "answer": "detox",
-      "guesses": [
-        "cares",
-        "boite",
-        "demot"
-      ],
-      "rounds": 3
-    },
-    {
       "answer": "wight",
       "guesses": [
         "cares",
@@ -247,26 +196,86 @@
         "might"
       ],
       "rounds": 6
+    },
+    {
+      "answer": "piper",
+      "guesses": [
+        "cares",
+        "tiver",
+        "liner",
+        "bider",
+        "hiper",
+        "wiper"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "riper",
+      "guesses": [
+        "cares",
+        "tiver",
+        "liner",
+        "bider",
+        "hiper",
+        "wiper"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "navel",
+      "guesses": [
+        "cares",
+        "paled",
+        "hamel",
+        "begat",
+        "favel",
+        "javel"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "maker",
+      "guesses": [
+        "cares",
+        "taver",
+        "lager",
+        "waker",
+        "baker",
+        "daker"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "ninny",
+      "guesses": [
+        "cares",
+        "bolty",
+        "dingy",
+        "kaphs",
+        "finny",
+        "jinny"
+      ],
+      "rounds": 6
     }
   ],
-  "benchmark_duration_seconds": 805.133,
-  "avg_duration_seconds_per_word": 0.348693,
+  "benchmark_duration_seconds": 805.843,
+  "avg_duration_seconds_per_word": 0.349001,
   "diagnostics": {
     "choice_counts": {
       "candidate:candidate-first": 5493,
-      "candidate:split-quality:w1:d0": 1747,
+      "candidate:split-quality:w1:d0": 1752,
       "candidate:split-quality:w1:d10": 6,
-      "candidate:split-quality:w1:d2": 355,
+      "candidate:split-quality:w1:d2": 356,
       "candidate:split-quality:w1:d3": 2,
-      "candidate:split-quality:w1:d4": 253,
-      "candidate:split-quality:w1:d5": 55,
+      "candidate:split-quality:w1:d4": 250,
+      "candidate:split-quality:w1:d5": 56,
       "candidate:split-quality:w1:d6": 83,
-      "candidate:split-quality:w1:d7": 19,
+      "candidate:split-quality:w1:d7": 20,
       "candidate:split-quality:w1:d8": 19,
       "candidate:split-quality:w1:d9": 5,
       "candidate:split-quality:w2:d10": 2,
       "candidate:split-quality:w2:d2": 102,
-      "candidate:split-quality:w2:d4": 94,
+      "candidate:split-quality:w2:d4": 93,
       "candidate:split-quality:w2:d5": 9,
       "candidate:split-quality:w2:d6": 35,
       "candidate:split-quality:w2:d7": 3,
@@ -278,7 +287,7 @@
       "candidate:split-quality:w3:d5": 6,
       "candidate:split-quality:w3:d6": 3,
       "candidate:split-quality:w3:d8": 4,
-      "candidate:split-quality:w3:d9": 5,
+      "candidate:split-quality:w3:d9": 4,
       "candidate:split-quality:w4:d2": 2,
       "candidate:split-quality:w4:d4": 5,
       "candidate:split-quality:w4:d5": 1,
@@ -290,14 +299,14 @@
       "exploration:split-quality:w1:d10": 184,
       "exploration:split-quality:w1:d6": 56,
       "exploration:split-quality:w1:d7": 21,
-      "exploration:split-quality:w1:d8": 149,
-      "exploration:split-quality:w1:d9": 87,
+      "exploration:split-quality:w1:d8": 143,
+      "exploration:split-quality:w1:d9": 89,
       "exploration:split-quality:w2:d10": 322,
       "exploration:split-quality:w2:d5": 2,
       "exploration:split-quality:w2:d6": 58,
-      "exploration:split-quality:w2:d7": 39,
-      "exploration:split-quality:w2:d8": 128,
-      "exploration:split-quality:w2:d9": 47,
+      "exploration:split-quality:w2:d7": 37,
+      "exploration:split-quality:w2:d8": 135,
+      "exploration:split-quality:w2:d9": 48,
       "exploration:split-quality:w3:d10": 108,
       "exploration:split-quality:w3:d4": 1,
       "exploration:split-quality:w3:d6": 28,
@@ -318,20 +327,17 @@
     "trap_risk_games_solved": 0,
     "trap_risk_games_failed": 0,
     "failure_duplicate_extra_letters": {
-      "0": 19,
-      "1": 16,
-      "2": 3
+      "0": 13,
+      "1": 14,
+      "2": 2
     },
     "failure_last_candidate_count_top": {
-      "3": 12,
-      "2": 8,
+      "3": 11,
+      "2": 6,
       "5": 5,
-      "1": 4,
       "12": 3,
       "4": 3,
-      "7": 1,
-      "56": 1,
-      "25": 1
+      "7": 1
     },
     "failure_template_top": {
       "_ower": 4,
@@ -343,53 +349,53 @@
       "ho_er": 1,
       "a_ing": 1,
       "_u_er": 1,
-      "re_a_": 1
+      "_uler": 1
     },
     "failure_suffix2_top": {
       "er": 19,
-      "ox": 2,
       "ht": 2,
       "ng": 1,
-      "ab": 1,
-      "ky": 1,
       "ss": 1,
       "ly": 1,
-      "ne": 1,
-      "en": 1
+      "el": 1,
+      "ny": 1,
+      "ka": 1,
+      "ty": 1,
+      "nt": 1
     }
   },
   "dictionary_coverage": {
     "answers_not_in_dictionary": 9,
-    "failed_answers_not_in_dictionary": 9,
-    "dictionary_mode": "strict",
-    "include_missing_answers": false,
-    "benchmark_dictionary_size": 15921,
+    "failed_answers_not_in_dictionary": 0,
+    "dictionary_mode": "coverage-adjusted",
+    "include_missing_answers": true,
+    "benchmark_dictionary_size": 15930,
     "base_dictionary_size": 15921
   },
   "comparison": {
     "baseline": {
       "strategy": "candidate-first",
       "dataset_size": 2309,
-      "solved": 2121,
-      "failed": 188,
-      "success_rate": 0.918579,
-      "average_attempts_solved": 4.328147,
+      "solved": 2131,
+      "failed": 178,
+      "success_rate": 0.92291,
+      "average_attempts_solved": 4.329892,
       "median_attempts_solved": 4,
-      "average_attempts_all": 4.545691,
+      "average_attempts_all": 4.53573,
       "distribution": {
         "1": 0,
         "2": 33,
         "3": 378,
-        "4": 846,
-        "5": 588,
-        "6": 276,
-        "7": 188
+        "4": 850,
+        "5": 593,
+        "6": 277,
+        "7": 178
       }
     },
-    "rescued_from_baseline": 157,
+    "rescued_from_baseline": 156,
     "regressed_to_failure": 7,
-    "net_solved_delta": 150,
-    "improved_attempts": 664,
-    "worsened_attempts": 338
+    "net_solved_delta": 149,
+    "improved_attempts": 663,
+    "worsened_attempts": 341
   }
 }

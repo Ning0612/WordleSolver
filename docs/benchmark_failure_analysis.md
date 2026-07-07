@@ -17,6 +17,12 @@ Full run on 2,309 answer entries:
 | adaptive-exploration | 2,227 | 82 | 96.45% |
 | split-quality | 2,271 | 38 | 98.35% |
 
+The current strict split-quality report records 00:13:25.133 internal benchmark
+duration, or 0.348693 seconds per answer entry. A separate coverage-adjusted
+local run with missing benchmark answers added to the in-memory dictionary
+solves 2,280 entries, fails 29, and records 00:13:25.843 internal duration
+(0.349001 seconds per entry).
+
 ## Implemented Strategy
 
 `split-quality` keeps candidate-first behavior while the candidate set is large.
@@ -79,13 +85,12 @@ missing from the solver dictionary or the cluster needs deeper lookahead.
 
 1. Improve dictionary coverage.
    The benchmark has 9 answer entries missing from `data/five_letter_words.txt`.
-   Add a legal way to include benchmark-only answer words locally, or document
-   coverage-adjusted metrics separately from strict dictionary-backed metrics.
+   `--include-missing-answers` now supports a separate coverage-adjusted local
+   run without committing the full answer list or raw trace.
 
 2. Add local-only candidate diagnostics.
-   The current trace records candidate counts, but not the candidate set. A
-   local-only diagnostic mode can record candidates and split partitions for the
-   remaining 14 solvable failures without committing answer data.
+   `--diagnostics-dir data/benchmark/diagnostics` records candidate sets and
+   choices for small-candidate rounds into an ignored local JSONL file.
 
 3. Separate answer candidates from dictionary-only guesses.
    The current dictionary contains many valid guess words that are unlikely

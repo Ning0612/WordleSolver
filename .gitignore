@@ -27,7 +27,11 @@ build/
 *.tmp
 *.log
 tmpclaude-*
+.serena/
 
 # Generated benchmark inputs/traces. Do not commit full answer lists.
 data/wordle_answers.txt
 data/benchmark/wordle_benchmark_raw.jsonl
+data/benchmark/**/wordle_benchmark_raw.jsonl
+data/benchmark/diagnostics/
+data/benchmark/**/diagnostics/

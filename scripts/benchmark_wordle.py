@@ -14,6 +14,7 @@ import argparse
 import json
 import statistics
 import sys
+import time
 from collections import Counter
 from dataclasses import asdict, dataclass
 from functools import lru_cache
@@ -35,6 +36,22 @@ from stats import LetterStats  # noqa: E402
 
 MAX_ROUNDS_DEFAULT = 6
 SPLIT_QUALITY_THRESHOLD = 20
+
+
+def is_relative_to(path: Path, parent: Path) -> bool:
+    try:
+        path.resolve().relative_to(parent.resolve())
+        return True
+    except ValueError:
+        return False
+
+
+def format_duration(seconds: float | None) -> str:
+    if seconds is None:
+        return "n/a"
+    hours, remainder = divmod(seconds, 3600)
+    minutes, secs = divmod(remainder, 60)
+    return f"{int(hours):02d}:{int(minutes):02d}:{secs:06.3f}"
 
 
 @dataclass
@@ -60,6 +77,22 @@ class GuessChoice:
     word: str
     category: str
     reason: str
+
+
+@dataclass
+class DiagnosticWriter:
+    path: Path
+
+    def __post_init__(self) -> None:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self._fh = self.path.open("w", encoding="utf-8", newline="\n")
+
+    def write(self, record: dict) -> None:
+        self._fh.write(json.dumps(record, ensure_ascii=False))
+        self._fh.write("\n")
+
+    def close(self) -> None:
+        self._fh.close()
 
 
 def load_answers(path: Path) -> list[str]:
@@ -246,6 +279,7 @@ def run_game(
     recommender: WordRecommender,
     max_rounds: int,
     strategy: str,
+    diagnostic_writer: DiagnosticWriter | None = None,
 ) -> GameResult:
     merged_constraint: Constraint | None = None
     candidates = word_list
@@ -272,6 +306,20 @@ def run_game(
         )
         guess = choice.word
         guesses.append(guess)
+
+        if diagnostic_writer is not None and len(candidates) <= SPLIT_QUALITY_THRESHOLD:
+            diagnostic_writer.write(
+                {
+                    "answer": answer,
+                    "round": round_number,
+                    "strategy": strategy,
+                    "candidate_count": len(candidates),
+                    "candidates": candidates,
+                    "choice": asdict(choice),
+                    "top_candidates": recommendations["candidates"][:5],
+                    "top_explorations": recommendations["explorations"][:5],
+                }
+            )
 
         feedback = simulate_feedback(guess, answer)
         round_trace = RoundTrace(
@@ -426,8 +474,12 @@ def aggregate_results(
     strategy: str,
     baseline_results: list[GameResult] | None = None,
     dictionary_coverage: dict | None = None,
+    duration_seconds: float | None = None,
 ) -> dict:
     summary = summarize_results(results, max_rounds, strategy)
+    if duration_seconds is not None:
+        summary["benchmark_duration_seconds"] = round(duration_seconds, 3)
+        summary["avg_duration_seconds_per_word"] = round(duration_seconds / len(results), 6) if results else None
     summary["diagnostics"] = build_diagnostics(results)
     if dictionary_coverage is not None:
         summary["dictionary_coverage"] = dictionary_coverage
@@ -460,6 +512,7 @@ def render_markdown(summary: dict, answers_path: Path, raw_path: Path, summary_p
         f"| {label} | {value} |"
         for label, value in [
             ("Dataset size", summary["dataset_size"]),
+            ("Dictionary mode", summary.get("dictionary_coverage", {}).get("dictionary_mode", "strict")),
             ("Strategy", summary["strategy"]),
             ("Solved", summary["solved"]),
             ("Failed", summary["failed"]),
@@ -467,6 +520,8 @@ def render_markdown(summary: dict, answers_path: Path, raw_path: Path, summary_p
             ("Average attempts (solved)", summary["average_attempts_solved"]),
             ("Median attempts (solved)", summary["median_attempts_solved"]),
             ("Average attempts (all)", summary["average_attempts_all"]),
+            ("Benchmark duration", format_duration(summary.get("benchmark_duration_seconds"))),
+            ("Avg duration per word", summary.get("avg_duration_seconds_per_word", "n/a")),
         ]
     )
 
@@ -477,6 +532,10 @@ def render_markdown(summary: dict, answers_path: Path, raw_path: Path, summary_p
         for label, value in [
             ("Answers not in dictionary", coverage.get("answers_not_in_dictionary", "n/a")),
             ("Failed answers not in dictionary", coverage.get("failed_answers_not_in_dictionary", "n/a")),
+            ("Dictionary mode", coverage.get("dictionary_mode", "n/a")),
+            ("Include missing answers", coverage.get("include_missing_answers", "n/a")),
+            ("Base dictionary size", coverage.get("base_dictionary_size", "n/a")),
+            ("Benchmark dictionary size", coverage.get("benchmark_dictionary_size", "n/a")),
         ]
     )
     comparison = summary.get("comparison", {})
@@ -524,6 +583,17 @@ python scripts/build_wordle_answers.py --source-repo <path-to-wordle-answers> --
 python scripts/benchmark_wordle.py --answers data/wordle_answers.txt --strategy split-quality --compare-baseline --output-dir data/benchmark --report docs/benchmark.md
 ```
 
+Coverage-adjusted local runs must use a separate output directory because they
+add missing benchmark answers to the in-memory dictionary:
+
+```bash
+python scripts/benchmark_wordle.py --answers data/wordle_answers.txt --strategy split-quality --compare-baseline --include-missing-answers --output-dir data/benchmark/coverage_adjusted --report data/benchmark/coverage_adjusted/benchmark.md --diagnostics-dir data/benchmark/diagnostics
+```
+
+Benchmark duration excludes final JSON/Markdown writing. When
+`--compare-baseline` is used, it includes both the selected strategy pass and
+the baseline comparison pass.
+
 ## Summary
 
 | Metric | Value |
@@ -563,6 +633,16 @@ def main() -> int:
     parser.add_argument("--max-rounds", type=int, default=MAX_ROUNDS_DEFAULT)
     parser.add_argument("--limit", type=int, default=0, help="Optional cap on the number of answers to benchmark.")
     parser.add_argument(
+        "--include-missing-answers",
+        action="store_true",
+        help="Coverage-adjusted local run: add benchmark answers missing from the dictionary to the in-memory word list.",
+    )
+    parser.add_argument(
+        "--diagnostics-dir",
+        default=None,
+        help="Optional local-only directory for small-candidate diagnostic JSONL output.",
+    )
+    parser.add_argument(
         "--strategy",
         choices=("candidate-first", "adaptive-exploration", "split-quality"),
         default="split-quality",
@@ -582,22 +662,56 @@ def main() -> int:
         report_path = ROOT / "docs" / "benchmark.md" if args.output_dir == "data/benchmark" else output_dir / "benchmark.md"
     else:
         report_path = ROOT / args.report if not Path(args.report).is_absolute() else Path(args.report)
+    default_output_dir = ROOT / "data" / "benchmark"
+    default_report_path = ROOT / "docs" / "benchmark.md"
+    if args.include_missing_answers and (
+        output_dir.resolve() == default_output_dir.resolve()
+        or report_path.resolve() == default_report_path.resolve()
+    ):
+        parser.error(
+            "--include-missing-answers is a coverage-adjusted local run; "
+            "use a separate --output-dir and --report instead of overwriting strict benchmark artifacts."
+        )
 
     answer_list = load_answers(answers_path)
     if args.limit and args.limit > 0:
         answer_list = answer_list[:args.limit]
         print(f"Limiting benchmark to first {len(answer_list)} answers")
 
-    word_list = get_word_list(dictionary_path)
+    base_word_list = get_word_list(dictionary_path)
+    base_dictionary_set = set(base_word_list)
+    missing_answers = set(answer_list) - base_dictionary_set
+    word_list = sorted(base_dictionary_set | missing_answers) if args.include_missing_answers else base_word_list
     stats = LetterStats(word_list)
     recommender = WordRecommender(word_list, stats)
 
+    diagnostic_writer = None
+    if args.diagnostics_dir is not None:
+        diagnostics_dir = ROOT / args.diagnostics_dir if not Path(args.diagnostics_dir).is_absolute() else Path(args.diagnostics_dir)
+        benchmark_dir = ROOT / "data" / "benchmark"
+        if is_relative_to(diagnostics_dir, ROOT):
+            try:
+                diagnostics_parts = diagnostics_dir.resolve().relative_to(benchmark_dir.resolve()).parts
+            except ValueError:
+                diagnostics_parts = ()
+            if "diagnostics" not in diagnostics_parts:
+                parser.error(
+                    "--diagnostics-dir writes answer/candidate traces; repo-local diagnostics must be under "
+                    "data/benchmark/.../diagnostics so generated JSONL remains ignored."
+                )
+        diagnostic_writer = DiagnosticWriter(diagnostics_dir / "wordle_small_set_diagnostics.jsonl")
+
+    benchmark_start = time.perf_counter()
     results: list[GameResult] = []
-    for index, answer in enumerate(answer_list, start=1):
-        result = run_game(answer, word_list, recommender, args.max_rounds, args.strategy)
-        results.append(result)
-        if index % 100 == 0:
-            print(f"Processed {index}/{len(answer_list)} answers")
+    try:
+        for index, answer in enumerate(answer_list, start=1):
+            result = run_game(answer, word_list, recommender, args.max_rounds, args.strategy, diagnostic_writer)
+            results.append(result)
+            if index % 100 == 0:
+                print(f"Processed {index}/{len(answer_list)} answers")
+    finally:
+        if diagnostic_writer is not None:
+            diagnostic_writer.close()
 
     baseline_results = None
     if args.compare_baseline and args.strategy != "candidate-first":
@@ -607,14 +721,16 @@ def main() -> int:
             baseline_results.append(result)
             if index % 100 == 0:
                 print(f"Processed baseline {index}/{len(answer_list)} answers")
+    benchmark_duration_seconds = time.perf_counter() - benchmark_start
 
-    answer_set = set(answer_list)
-    dictionary_set = set(word_list)
     failed_answers = {result.answer for result in results if not result.solved}
-    missing_answers = answer_set - dictionary_set
     dictionary_coverage = {
         "answers_not_in_dictionary": len(missing_answers),
         "failed_answers_not_in_dictionary": len(missing_answers & failed_answers),
+        "dictionary_mode": "coverage-adjusted" if args.include_missing_answers else "strict",
+        "include_missing_answers": args.include_missing_answers,
+        "benchmark_dictionary_size": len(word_list),
+        "base_dictionary_size": len(base_word_list),
     }
 
     summary = aggregate_results(
@@ -623,6 +739,7 @@ def main() -> int:
         args.strategy,
         baseline_results,
         dictionary_coverage,
+        benchmark_duration_seconds,
     )
     raw_path = output_dir / "wordle_benchmark_raw.jsonl"
     summary_path = output_dir / "wordle_benchmark_summary.json"
