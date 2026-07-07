@@ -70,7 +70,7 @@ Rebuild it with:
 
 ```bash
 python scripts/build_wordle_answers.py --source-repo <path-to-wordle-answers> --output data/wordle_answers.txt
-python scripts/benchmark_wordle.py --answers data/wordle_answers.txt --strategy adaptive-exploration --compare-baseline --output-dir data/benchmark --report docs/benchmark.md
+python scripts/benchmark_wordle.py --answers data/wordle_answers.txt --strategy split-quality --compare-baseline --output-dir data/benchmark --report docs/benchmark.md
 ```
 
 ## Quick Start
@@ -283,14 +283,25 @@ python src/stats.py
 
 ## Algorithm Performance
 
-Benchmark run against 2,309 answer entries from the reproducible answer archive using the `adaptive-exploration` selection strategy:
+Benchmark run against 2,309 answer entries from the reproducible answer archive using the `split-quality` selection strategy:
 
-- **Solved**: 2,227
-- **Failed**: 82
-- **Success rate**: 96.45% within 6 rounds
-- **Average attempts (solved)**: 4.42
-- **Median attempts (solved)**: 4
-- **Average attempts (all)**: 4.51
+- **Solved**: 2,271
+- **Failed**: 38
+- **Success rate**: 98.35% within 6 rounds
+- **Average attempts (solved)**: 4.26
+- **Median attempts (solved)**: 4.0
+- **Average attempts (all)**: 4.30
+- **Dictionary coverage**: 9 answer entries are not in the solver dictionary; all 9 are among the failures.
+
+Baseline comparison:
+
+| Strategy | Solved | Failed | Success rate |
+|---|---:|---:|---:|
+| candidate-first | 2,121 | 188 | 91.86% |
+| split-quality | 2,271 | 38 | 98.35% |
+
+`split-quality` rescues 157 baseline failures, regresses 7 previously solved
+answers to failure, and nets 150 additional solved answers.
 
 ## Contributing
 

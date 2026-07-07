@@ -1,163 +1,43 @@
 {
-  "strategy": "adaptive-exploration",
+  "strategy": "split-quality",
   "dataset_size": 2309,
-  "solved": 2227,
-  "failed": 82,
-  "success_rate": 0.964487,
-  "average_attempts_solved": 4.416255,
+  "solved": 2271,
+  "failed": 38,
+  "success_rate": 0.983543,
+  "average_attempts_solved": 4.256715,
   "median_attempts_solved": 4,
-  "average_attempts_all": 4.508012,
+  "average_attempts_all": 4.301862,
   "distribution": {
     "1": 0,
-    "2": 33,
-    "3": 342,
-    "4": 853,
-    "5": 663,
-    "6": 336,
-    "7": 82
+    "2": 31,
+    "3": 304,
+    "4": 1097,
+    "5": 729,
+    "6": 110,
+    "7": 38
   },
   "failure_cases": [
     {
-      "answer": "marry",
+      "answer": "fixer",
       "guesses": [
         "cares",
-        "bardy",
-        "marly",
-        "pinto",
-        "gujar",
-        "marvy"
+        "tiver",
+        "liner",
+        "bider",
+        "hiper",
+        "mixer"
       ],
       "rounds": 6
     },
     {
-      "answer": "booby",
+      "answer": "homer",
       "guesses": [
         "cares",
-        "bolty",
-        "fundi",
-        "whomp",
-        "gooky",
-        "boozy"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "stout",
-      "guesses": [
-        "cares",
-        "soily",
-        "shout",
-        "spong",
-        "umbos",
-        "skout"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "hatch",
-      "guesses": [
-        "cares",
-        "macho",
-        "latch",
-        "gundi",
-        "pawky",
-        "batch"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "jaunt",
-      "guesses": [
-        "cares",
-        "manly",
-        "baton",
-        "daunt",
-        "hafiz",
-        "gaunt"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "craze",
-      "guesses": [
-        "cares",
-        "crane",
-        "modif",
-        "gulph",
-        "bawty",
-        "crake"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "ferry",
-      "guesses": [
-        "cares",
-        "bergy",
-        "polki",
-        "thund",
-        "jewry",
-        "merry"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "heist",
-      "guesses": [
-        "cares",
-        "stile",
-        "deist",
-        "gumbo",
-        "kevyn",
-        "feist"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "zesty",
-      "guesses": [
-        "cares",
-        "stile",
-        "guest",
-        "festy",
-        "whomp",
-        "nesty"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "glass",
-      "guesses": [
-        "cares",
-        "plats",
-        "flans",
-        "bodhi",
-        "kumys",
-        "slags"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "sever",
-      "guesses": [
-        "cares",
-        "soter",
-        "sider",
-        "glyph",
-        "unweb",
-        "seker"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "agape",
-      "guesses": [
-        "cares",
-        "beany",
-        "glave",
-        "image",
-        "agate",
-        "agade"
+        "tiver",
+        "foder",
+        "honer",
+        "hoker",
+        "holer"
       ],
       "rounds": 6
     },
@@ -174,74 +54,14 @@
       "rounds": 6
     },
     {
-      "answer": "coyly",
+      "answer": "poker",
       "guesses": [
         "cares",
-        "coiny",
-        "bumph",
-        "godly",
-        "flowk",
-        "colly"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "taunt",
-      "guesses": [
-        "cares",
-        "manly",
-        "baton",
-        "daunt",
-        "hafiz",
-        "gaunt"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "class",
-      "guesses": [
-        "cares",
-        "chads",
-        "blink",
-        "jumpy",
-        "flogs",
-        "claws"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "ionic",
-      "guesses": [
-        "cares",
-        "pinch",
-        "monic",
-        "tubig",
-        "zinky",
-        "nonic"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "carry",
-      "guesses": [
-        "cares",
-        "carob",
-        "midgy",
-        "fulth",
-        "prank",
-        "carvy"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "crave",
-      "guesses": [
-        "cares",
-        "crane",
-        "modif",
-        "gulph",
-        "bawty",
-        "crake"
+        "tiver",
+        "foder",
+        "honer",
+        "bower",
+        "moper"
       ],
       "rounds": 6
     },
@@ -251,62 +71,294 @@
         "cares",
         "donia",
         "ligan",
+        "whipt",
         "aking",
-        "upbay",
-        "ating"
+        "axing"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "queer",
+      "guesses": [
+        "cares",
+        "tiver",
+        "foder",
+        "huger",
+        "puler",
+        "buyer"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "rehab",
+      "guesses": [
+        "cares",
+        "drate",
+        "reban"
+      ],
+      "rounds": 3
+    },
+    {
+      "answer": "ruler",
+      "guesses": [
+        "cares",
+        "tiver",
+        "foder",
+        "huger",
+        "puler",
+        "euler"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "joker",
+      "guesses": [
+        "cares",
+        "tiver",
+        "foder",
+        "honer",
+        "bower",
+        "moper"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "geeky",
+      "guesses": [
+        "cares",
+        "boite",
+        "wendy",
+        "kelpy",
+        "yeuky"
+      ],
+      "rounds": 5
+    },
+    {
+      "answer": "amass",
+      "guesses": [
+        "cares",
+        "plats",
+        "khans",
+        "quads",
+        "ogams",
+        "amaas"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "jelly",
+      "guesses": [
+        "cares",
+        "boite",
+        "wendy",
+        "kelpy",
+        "felly",
+        "gelly"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "lower",
+      "guesses": [
+        "cares",
+        "tiver",
+        "foder",
+        "honer",
+        "bower",
+        "jower"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "penne",
+      "guesses": [
+        "cares",
+        "boite",
+        "fudge",
+        "helve",
+        "neeze"
+      ],
+      "rounds": 5
+    },
+    {
+      "answer": "ramen",
+      "guesses": [
+        "cares",
+        "taver",
+        "midgy",
+        "ramex",
+        "ramee"
+      ],
+      "rounds": 5
+    },
+    {
+      "answer": "sneer",
+      "guesses": [
+        "cares",
+        "soter",
+        "sider",
+        "whelp",
+        "skeer",
+        "smeer"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "wager",
+      "guesses": [
+        "cares",
+        "taver",
+        "lager",
+        "reefy",
+        "jager",
+        "pager"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "wider",
+      "guesses": [
+        "cares",
+        "tiver",
+        "liner",
+        "bider",
+        "hider",
+        "mider"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "detox",
+      "guesses": [
+        "cares",
+        "boite",
+        "demot"
+      ],
+      "rounds": 3
+    },
+    {
+      "answer": "wight",
+      "guesses": [
+        "cares",
+        "bolty",
+        "pight",
+        "hadnt",
+        "fight",
+        "might"
       ],
       "rounds": 6
     }
   ],
   "diagnostics": {
     "choice_counts": {
-      "candidate:candidate-first": 9357,
-      "exploration:trap-risk": 955
+      "candidate:candidate-first": 5493,
+      "candidate:split-quality:w1:d0": 1747,
+      "candidate:split-quality:w1:d10": 6,
+      "candidate:split-quality:w1:d2": 355,
+      "candidate:split-quality:w1:d3": 2,
+      "candidate:split-quality:w1:d4": 253,
+      "candidate:split-quality:w1:d5": 55,
+      "candidate:split-quality:w1:d6": 83,
+      "candidate:split-quality:w1:d7": 19,
+      "candidate:split-quality:w1:d8": 19,
+      "candidate:split-quality:w1:d9": 5,
+      "candidate:split-quality:w2:d10": 2,
+      "candidate:split-quality:w2:d2": 102,
+      "candidate:split-quality:w2:d4": 94,
+      "candidate:split-quality:w2:d5": 9,
+      "candidate:split-quality:w2:d6": 35,
+      "candidate:split-quality:w2:d7": 3,
+      "candidate:split-quality:w2:d8": 6,
+      "candidate:split-quality:w2:d9": 2,
+      "candidate:split-quality:w3:d10": 1,
+      "candidate:split-quality:w3:d2": 16,
+      "candidate:split-quality:w3:d4": 20,
+      "candidate:split-quality:w3:d5": 6,
+      "candidate:split-quality:w3:d6": 3,
+      "candidate:split-quality:w3:d8": 4,
+      "candidate:split-quality:w3:d9": 5,
+      "candidate:split-quality:w4:d2": 2,
+      "candidate:split-quality:w4:d4": 5,
+      "candidate:split-quality:w4:d5": 1,
+      "candidate:split-quality:w4:d6": 5,
+      "candidate:split-quality:w4:d8": 3,
+      "candidate:split-quality:w5:d4": 2,
+      "candidate:split-quality:w5:d6": 2,
+      "candidate:split-quality:w7:d8": 3,
+      "exploration:split-quality:w1:d10": 184,
+      "exploration:split-quality:w1:d6": 56,
+      "exploration:split-quality:w1:d7": 21,
+      "exploration:split-quality:w1:d8": 149,
+      "exploration:split-quality:w1:d9": 87,
+      "exploration:split-quality:w2:d10": 322,
+      "exploration:split-quality:w2:d5": 2,
+      "exploration:split-quality:w2:d6": 58,
+      "exploration:split-quality:w2:d7": 39,
+      "exploration:split-quality:w2:d8": 128,
+      "exploration:split-quality:w2:d9": 47,
+      "exploration:split-quality:w3:d10": 108,
+      "exploration:split-quality:w3:d4": 1,
+      "exploration:split-quality:w3:d6": 28,
+      "exploration:split-quality:w3:d7": 5,
+      "exploration:split-quality:w3:d8": 69,
+      "exploration:split-quality:w3:d9": 42,
+      "exploration:split-quality:w4:d10": 49,
+      "exploration:split-quality:w4:d6": 3,
+      "exploration:split-quality:w4:d8": 52,
+      "exploration:split-quality:w4:d9": 18,
+      "exploration:split-quality:w5:d10": 18,
+      "exploration:split-quality:w5:d6": 3,
+      "exploration:split-quality:w5:d8": 9,
+      "exploration:split-quality:w6:d10": 4,
+      "exploration:split-quality:w6:d8": 5,
+      "exploration:split-quality:w7:d8": 6
     },
-    "trap_risk_games_solved": 650,
-    "trap_risk_games_failed": 50,
+    "trap_risk_games_solved": 0,
+    "trap_risk_games_failed": 0,
     "failure_duplicate_extra_letters": {
-      "0": 18,
-      "1": 49,
-      "2": 14,
-      "3": 1
+      "0": 19,
+      "1": 16,
+      "2": 3
     },
     "failure_last_candidate_count_top": {
-      "2": 32,
-      "3": 20,
-      "4": 12,
-      "5": 8,
+      "3": 12,
+      "2": 8,
+      "5": 5,
       "1": 4,
-      "12": 2,
+      "12": 3,
+      "4": 3,
+      "7": 1,
       "56": 1,
-      "25": 1,
-      "13": 1,
-      "6": 1
+      "25": 1
     },
     "failure_template_top": {
       "_ower": 4,
-      "_aunt": 3,
-      "cra_e": 2,
-      "_esty": 2,
-      "mar_y": 1,
-      "boo_y": 1,
-      "s_out": 1,
-      "_atch": 1,
-      "_erry": 1,
-      "_eist": 1
+      "_o_er": 3,
+      "_ider": 2,
+      "_ight": 2,
+      "_iper": 2,
+      "_ixer": 1,
+      "ho_er": 1,
+      "a_ing": 1,
+      "_u_er": 1,
+      "re_a_": 1
     },
     "failure_suffix2_top": {
       "er": 19,
-      "nt": 4,
-      "ss": 4,
-      "ve": 4,
-      "ry": 3,
-      "ty": 3,
-      "st": 2,
-      "ly": 2,
-      "al": 2,
-      "ny": 2
+      "ox": 2,
+      "ht": 2,
+      "ng": 1,
+      "ab": 1,
+      "ky": 1,
+      "ss": 1,
+      "ly": 1,
+      "ne": 1,
+      "en": 1
     }
+  },
+  "dictionary_coverage": {
+    "answers_not_in_dictionary": 9,
+    "failed_answers_not_in_dictionary": 9
   },
   "comparison": {
     "baseline": {
@@ -328,10 +380,10 @@
         "7": 188
       }
     },
-    "rescued_from_baseline": 119,
-    "regressed_to_failure": 13,
-    "net_solved_delta": 106,
-    "improved_attempts": 217,
-    "worsened_attempts": 167
+    "rescued_from_baseline": 157,
+    "regressed_to_failure": 7,
+    "net_solved_delta": 150,
+    "improved_attempts": 664,
+    "worsened_attempts": 338
   }
 }

@@ -19,7 +19,7 @@ python scripts/build_wordle_answers.py --source-repo <path-to-wordle-answers> --
 3. Run the benchmark:
 
 ```bash
-python scripts/benchmark_wordle.py --answers data/wordle_answers.txt --strategy adaptive-exploration --compare-baseline --output-dir data/benchmark --report docs/benchmark.md
+python scripts/benchmark_wordle.py --answers data/wordle_answers.txt --strategy split-quality --compare-baseline --output-dir data/benchmark --report docs/benchmark.md
 ```
 
 ## Summary
@@ -27,45 +27,61 @@ python scripts/benchmark_wordle.py --answers data/wordle_answers.txt --strategy 
 | Metric | Value |
 |---|---:|
 | Dataset size | 2309 |
-| Strategy | adaptive-exploration |
-| Solved | 2227 |
-| Failed | 82 |
-| Success rate | 96.45% |
-| Average attempts (solved) | 4.416255 |
+| Strategy | split-quality |
+| Solved | 2271 |
+| Failed | 38 |
+| Success rate | 98.35% |
+| Average attempts (solved) | 4.256715 |
 | Median attempts (solved) | 4 |
-| Average attempts (all) | 4.508012 |
+| Average attempts (all) | 4.301862 |
 
 ## Distribution
 
 - `1`: 0
-- `2`: 33
-- `3`: 342
-- `4`: 853
-- `5`: 663
-- `6`: 336
-- `7`: 82
+- `2`: 31
+- `3`: 304
+- `4`: 1097
+- `5`: 729
+- `6`: 110
+- `7`: 38
+
+## Dictionary Coverage
+
+- Answers not in dictionary: `9`
+- Failed answers not in dictionary: `9`
+
+## Baseline Comparison
+
+| Strategy | Solved | Failed | Success rate |
+|---|---:|---:|---:|
+| candidate-first | 2121 | 188 | 91.86% |
+| split-quality | 2271 | 38 | 98.35% |
+
+- Rescued from baseline: `157`
+- Regressed to failure: `7`
+- Net solved delta: `150`
 
 ## Failure Cases
 
 | answer | guesses | rounds |
 |---|---|---:|
-| marry | cares, bardy, marly, pinto, gujar, marvy | 6 |
-| booby | cares, bolty, fundi, whomp, gooky, boozy | 6 |
-| stout | cares, soily, shout, spong, umbos, skout | 6 |
-| hatch | cares, macho, latch, gundi, pawky, batch | 6 |
-| jaunt | cares, manly, baton, daunt, hafiz, gaunt | 6 |
-| craze | cares, crane, modif, gulph, bawty, crake | 6 |
-| ferry | cares, bergy, polki, thund, jewry, merry | 6 |
-| heist | cares, stile, deist, gumbo, kevyn, feist | 6 |
-| zesty | cares, stile, guest, festy, whomp, nesty | 6 |
-| glass | cares, plats, flans, bodhi, kumys, slags | 6 |
-| sever | cares, soter, sider, glyph, unweb, seker | 6 |
-| agape | cares, beany, glave, image, agate, agade | 6 |
+| fixer | cares, tiver, liner, bider, hiper, mixer | 6 |
+| homer | cares, tiver, foder, honer, hoker, holer | 6 |
 | power | cares, tiver, foder, honer, bower, jower | 6 |
-| coyly | cares, coiny, bumph, godly, flowk, colly | 6 |
-| taunt | cares, manly, baton, daunt, hafiz, gaunt | 6 |
-| class | cares, chads, blink, jumpy, flogs, claws | 6 |
-| ionic | cares, pinch, monic, tubig, zinky, nonic | 6 |
-| carry | cares, carob, midgy, fulth, prank, carvy | 6 |
-| crave | cares, crane, modif, gulph, bawty, crake | 6 |
-| aging | cares, donia, ligan, aking, upbay, ating | 6 |
+| poker | cares, tiver, foder, honer, bower, moper | 6 |
+| aging | cares, donia, ligan, whipt, aking, axing | 6 |
+| queer | cares, tiver, foder, huger, puler, buyer | 6 |
+| rehab | cares, drate, reban | 3 |
+| ruler | cares, tiver, foder, huger, puler, euler | 6 |
+| joker | cares, tiver, foder, honer, bower, moper | 6 |
+| geeky | cares, boite, wendy, kelpy, yeuky | 5 |
+| amass | cares, plats, khans, quads, ogams, amaas | 6 |
+| jelly | cares, boite, wendy, kelpy, felly, gelly | 6 |
+| lower | cares, tiver, foder, honer, bower, jower | 6 |
+| penne | cares, boite, fudge, helve, neeze | 5 |
+| ramen | cares, taver, midgy, ramex, ramee | 5 |
+| sneer | cares, soter, sider, whelp, skeer, smeer | 6 |
+| wager | cares, taver, lager, reefy, jager, pager | 6 |
+| wider | cares, tiver, liner, bider, hider, mider | 6 |
+| detox | cares, boite, demot | 3 |
+| wight | cares, bolty, pight, hadnt, fight, might | 6 |

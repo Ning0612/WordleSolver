@@ -16,6 +16,7 @@ import statistics
 import sys
 from collections import Counter
 from dataclasses import asdict, dataclass
+from functools import lru_cache
 from pathlib import Path
 from typing import Iterable
 
@@ -33,6 +34,7 @@ from stats import LetterStats  # noqa: E402
 
 
 MAX_ROUNDS_DEFAULT = 6
+SPLIT_QUALITY_THRESHOLD = 20
 
 
 @dataclass
@@ -87,16 +89,123 @@ def simulate_feedback(guess: str, answer: str) -> list[FeedbackColor]:
     return feedback
 
 
+@lru_cache(maxsize=None)
+def feedback_key(guess: str, answer: str) -> tuple[str, ...]:
+    return tuple(color.value for color in simulate_feedback(guess, answer))
+
+
+def duplicate_probe_score(guess: str, candidates: list[str]) -> int:
+    varying_letters = set()
+    for letter in "abcdefghijklmnopqrstuvwxyz":
+        counts = {candidate.count(letter) for candidate in candidates}
+        if len(counts) > 1:
+            varying_letters.add(letter)
+
+    if not varying_letters:
+        return 0
+
+    unique_hits = sum(1 for letter in set(guess) if letter in varying_letters)
+    repeated_hits = sum(guess.count(letter) - 1 for letter in varying_letters if guess.count(letter) > 1)
+    return unique_hits * 2 + repeated_hits
+
+
+def split_quality_choice(
+    recommendations: dict[str, list[tuple[str, float]]],
+    candidates: list[str],
+    full_dictionary: list[str],
+    round_number: int,
+    max_rounds: int,
+    constraint: Constraint,
+) -> GuessChoice | None:
+    if len(candidates) > SPLIT_QUALITY_THRESHOLD:
+        return None
+
+    rounds_remaining = max_rounds - round_number + 1
+    candidate_rank = {word: rank for rank, word in enumerate(candidates)}
+    candidate_words = list(candidates)
+
+    if rounds_remaining <= 2 or len(candidates) <= rounds_remaining:
+        guess_pool = [(word, "candidate", candidate_rank[word]) for word in candidate_words]
+    else:
+        exploration_words = [
+            word
+            for word in full_dictionary
+            if word not in candidate_rank
+        ]
+        guess_pool = [(word, "candidate", candidate_rank[word]) for word in candidate_words]
+        guess_pool.extend(
+            (word, "exploration", len(candidate_words) + rank)
+            for rank, word in enumerate(exploration_words)
+        )
+
+    if not guess_pool:
+        return None
+
+    best: tuple[tuple[float, ...], GuessChoice] | None = None
+    for word, category, rank in guess_pool:
+        buckets: Counter[tuple[str, ...]] = Counter()
+        best_worst = best[0][0] if best is not None else None
+        abandoned = False
+        for answer in candidates:
+            key = feedback_key(word, answer)
+            buckets[key] += 1
+            if best_worst is not None and buckets[key] > best_worst:
+                abandoned = True
+                break
+        if abandoned:
+            continue
+
+        worst_case = max(buckets.values())
+        expected_remaining = sum(size * size for size in buckets.values()) / len(candidates)
+        singleton_buckets = sum(1 for size in buckets.values() if size == 1)
+        solved_now = 1 if word in candidate_rank else 0
+        duplicate_score = duplicate_probe_score(word, candidates)
+        split_count = len(buckets)
+
+        sort_key = (
+            worst_case,
+            expected_remaining,
+            -singleton_buckets,
+            -duplicate_score,
+            -solved_now,
+            -split_count,
+            0 if category == "candidate" else 1,
+            rank,
+        )
+        choice = GuessChoice(
+            word=word,
+            category=category,
+            reason=f"split-quality:w{worst_case}:d{duplicate_score}",
+        )
+        if best is None or sort_key < best[0]:
+            best = (sort_key, choice)
+
+    return best[1] if best else None
+
+
 def select_guess(
     recommendations: dict[str, list[tuple[str, float]]],
     fallback_pool: list[str],
     candidates: list[str],
+    full_dictionary: list[str],
     constraint: Constraint,
     round_number: int,
     max_rounds: int,
     strategy: str,
 ) -> GuessChoice:
-    if strategy == "adaptive-exploration":
+    if strategy == "split-quality":
+        split_choice = split_quality_choice(
+            recommendations=recommendations,
+            candidates=candidates,
+            full_dictionary=full_dictionary,
+            round_number=round_number,
+            max_rounds=max_rounds,
+            constraint=constraint,
+        )
+        if split_choice is not None:
+            return split_choice
+
+    if strategy in {"adaptive-exploration", "split-quality"}:
         rounds_remaining = max_rounds - round_number + 1
         should_explore = (
             rounds_remaining > 1
@@ -155,6 +264,7 @@ def run_game(
             recommendations=recommendations,
             fallback_pool=candidates,
             candidates=candidates,
+            full_dictionary=word_list,
             constraint=active_constraint,
             round_number=round_number,
             max_rounds=max_rounds,
@@ -315,9 +425,12 @@ def aggregate_results(
     max_rounds: int,
     strategy: str,
     baseline_results: list[GameResult] | None = None,
+    dictionary_coverage: dict | None = None,
 ) -> dict:
     summary = summarize_results(results, max_rounds, strategy)
     summary["diagnostics"] = build_diagnostics(results)
+    if dictionary_coverage is not None:
+        summary["dictionary_coverage"] = dictionary_coverage
     if baseline_results is not None:
         summary["comparison"] = build_strategy_comparison(results, baseline_results, max_rounds)
     return summary
@@ -358,6 +471,28 @@ def render_markdown(summary: dict, answers_path: Path, raw_path: Path, summary_p
     )
 
     dist_lines = "\n".join(f"- `{k}`: {v}" for k, v in summary["distribution"].items())
+    coverage = summary.get("dictionary_coverage", {})
+    coverage_lines = "\n".join(
+        f"- {label}: `{value}`"
+        for label, value in [
+            ("Answers not in dictionary", coverage.get("answers_not_in_dictionary", "n/a")),
+            ("Failed answers not in dictionary", coverage.get("failed_answers_not_in_dictionary", "n/a")),
+        ]
+    )
+    comparison = summary.get("comparison", {})
+    baseline = comparison.get("baseline", {})
+    if baseline:
+        comparison_lines = f"""| Strategy | Solved | Failed | Success rate |
+|---|---:|---:|---:|
+| {baseline["strategy"]} | {baseline["solved"]} | {baseline["failed"]} | {baseline["success_rate"] * 100:.2f}% |
+| {summary["strategy"]} | {summary["solved"]} | {summary["failed"]} | {summary["success_rate"] * 100:.2f}% |
+
+- Rescued from baseline: `{comparison["rescued_from_baseline"]}`
+- Regressed to failure: `{comparison["regressed_to_failure"]}`
+- Net solved delta: `{comparison["net_solved_delta"]}`
+"""
+    else:
+        comparison_lines = "No baseline comparison was requested."
 
     failures = summary["failure_cases"]
     failure_lines = "\n".join(
@@ -386,7 +521,7 @@ python scripts/build_wordle_answers.py --source-repo <path-to-wordle-answers> --
 3. Run the benchmark:
 
 ```bash
-python scripts/benchmark_wordle.py --answers data/wordle_answers.txt --strategy adaptive-exploration --compare-baseline --output-dir data/benchmark --report docs/benchmark.md
+python scripts/benchmark_wordle.py --answers data/wordle_answers.txt --strategy split-quality --compare-baseline --output-dir data/benchmark --report docs/benchmark.md
 ```
 
 ## Summary
@@ -398,6 +533,14 @@ python scripts/benchmark_wordle.py --answers data/wordle_answers.txt --strategy 
 ## Distribution
 
 {dist_lines}
+
+## Dictionary Coverage
+
+{coverage_lines}
+
+## Baseline Comparison
+
+{comparison_lines}
 
 ## Failure Cases
 
@@ -412,13 +555,17 @@ def main() -> int:
     parser.add_argument("--answers", default="data/wordle_answers.txt", help="Path to the answer list.")
     parser.add_argument("--dictionary", default="data/five_letter_words.txt", help="Path to the full word dictionary.")
     parser.add_argument("--output-dir", default="data/benchmark", help="Directory for raw benchmark outputs.")
-    parser.add_argument("--report", default="docs/benchmark.md", help="Markdown report path.")
+    parser.add_argument(
+        "--report",
+        default=None,
+        help="Markdown report path. Defaults to docs/benchmark.md for the default output dir, otherwise <output-dir>/benchmark.md.",
+    )
     parser.add_argument("--max-rounds", type=int, default=MAX_ROUNDS_DEFAULT)
     parser.add_argument("--limit", type=int, default=0, help="Optional cap on the number of answers to benchmark.")
     parser.add_argument(
         "--strategy",
-        choices=("candidate-first", "adaptive-exploration"),
-        default="adaptive-exploration",
+        choices=("candidate-first", "adaptive-exploration", "split-quality"),
+        default="split-quality",
         help="Guess selection strategy for candidate/exploration recommendations.",
     )
     parser.add_argument(
@@ -431,7 +578,10 @@ def main() -> int:
     answers_path = ROOT / args.answers if not Path(args.answers).is_absolute() else Path(args.answers)
     dictionary_path = ROOT / args.dictionary if not Path(args.dictionary).is_absolute() else Path(args.dictionary)
     output_dir = ROOT / args.output_dir if not Path(args.output_dir).is_absolute() else Path(args.output_dir)
-    report_path = ROOT / args.report if not Path(args.report).is_absolute() else Path(args.report)
+    if args.report is None:
+        report_path = ROOT / "docs" / "benchmark.md" if args.output_dir == "data/benchmark" else output_dir / "benchmark.md"
+    else:
+        report_path = ROOT / args.report if not Path(args.report).is_absolute() else Path(args.report)
 
     answer_list = load_answers(answers_path)
     if args.limit and args.limit > 0:
@@ -458,7 +608,22 @@ def main() -> int:
             if index % 100 == 0:
                 print(f"Processed baseline {index}/{len(answer_list)} answers")
 
-    summary = aggregate_results(results, args.max_rounds, args.strategy, baseline_results)
+    answer_set = set(answer_list)
+    dictionary_set = set(word_list)
+    failed_answers = {result.answer for result in results if not result.solved}
+    missing_answers = answer_set - dictionary_set
+    dictionary_coverage = {
+        "answers_not_in_dictionary": len(missing_answers),
+        "failed_answers_not_in_dictionary": len(missing_answers & failed_answers),
+    }
+
+    summary = aggregate_results(
+        results,
+        args.max_rounds,
+        args.strategy,
+        baseline_results,
+        dictionary_coverage,
+    )
     raw_path = output_dir / "wordle_benchmark_raw.jsonl"
     summary_path = output_dir / "wordle_benchmark_summary.json"
 
