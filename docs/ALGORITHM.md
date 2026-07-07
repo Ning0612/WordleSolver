@@ -479,7 +479,12 @@ def expected_information(word, candidates):
 | 3 | Guess "BRAID" (candidate) | 12 | ~3 |
 | 4 | Guess "BROAD" (candidate) | 3 | 1 ✅ |
 
-**Average Solve**: 3.6 rounds (tested on 2,315 Wordle answers)
+Current reproducible benchmark results are tracked in
+[`benchmark.md`](benchmark.md), [`benchmark_failure_analysis.md`](benchmark_failure_analysis.md),
+and [`benchmark_history.md`](benchmark_history.md). The strict public
+dictionary-backed `split-quality` run solves 2,271 of 2,309 entries with an
+average of 4.256715 completed rounds. A local answer-prior diagnostic run solves
+all 2,309 entries with an average of 3.542659 completed rounds.
 
 ---
 
@@ -536,7 +541,10 @@ def expected_information(word, candidates):
 
 **Pros**:
 - O(n) complexity (real-time performance)
-- Near-optimal average case (3.6 rounds vs 3.4 theoretical best)
+- Reproducible benchmark tracking for strict dictionary, coverage-adjusted, and
+  answer-prior local modes
+- Current strict `split-quality` run averages 4.256715 completed rounds; the
+  answer-prior diagnostic run averages 3.542659 completed rounds
 - Configurable via weights
 - Fast enough for interactive use
 

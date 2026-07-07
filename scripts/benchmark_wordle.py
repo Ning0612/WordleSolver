@@ -519,9 +519,9 @@ def render_markdown(summary: dict, answers_path: Path, raw_path: Path, summary_p
             ("Solved", summary["solved"]),
             ("Failed", summary["failed"]),
             ("Success rate", f'{summary["success_rate"] * 100:.2f}%'),
-            ("Average attempts (solved)", summary["average_attempts_solved"]),
+            ("Avg completed rounds", summary["average_attempts_solved"]),
             ("Median attempts (solved)", summary["median_attempts_solved"]),
-            ("Average attempts (all)", summary["average_attempts_all"]),
+            ("Avg all rounds", summary["average_attempts_all"]),
             ("Benchmark duration", format_duration(summary.get("benchmark_duration_seconds"))),
             ("Avg duration per word", summary.get("avg_duration_seconds_per_word", "n/a")),
         ]
@@ -605,6 +605,14 @@ python scripts/benchmark_wordle.py --answers data/wordle_answers.txt --strategy 
 Benchmark duration excludes final JSON/Markdown writing. When
 `--compare-baseline` is used, it includes both the selected strategy pass and
 the baseline comparison pass.
+
+## Benchmark Modes
+
+| Mode | Candidate answer pool | Purpose |
+|---|---|---|
+| Strict dictionary | Public dictionary | Public benchmark for the committed solver dictionary. |
+| Coverage-adjusted | Public dictionary plus locally generated missing answers | Separates dictionary coverage failures from strategy failures. |
+| Answer-prior local | Locally generated answer list | Diagnostic run for answer-likelihood effects; the answer list remains uncommitted. |
 
 ## Summary
 

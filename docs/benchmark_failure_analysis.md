@@ -9,13 +9,21 @@ The original benchmark used a strict candidate-first strategy: always choose the
 top candidate recommendation when candidates are available, and use exploration
 only when no candidate recommendation exists.
 
-Full run on 2,309 answer entries:
+Full strict dictionary run on 2,309 answer entries:
 
-| Strategy | Solved | Failed | Success rate |
-|---|---:|---:|---:|
-| candidate-first | 2,121 | 188 | 91.86% |
-| adaptive-exploration | 2,227 | 82 | 96.45% |
-| split-quality | 2,271 | 38 | 98.35% |
+| Strategy | Solved | Failed | Success rate | Avg completed rounds | Avg all rounds |
+|---|---:|---:|---:|---:|---:|
+| candidate-first | 2,121 | 188 | 91.86% | 4.328147 | 4.545691 |
+| adaptive-exploration | 2,227 | 82 | 96.45% | 4.416255 | 4.508012 |
+| split-quality | 2,271 | 38 | 98.35% | 4.256715 | 4.301862 |
+
+Current diagnostic modes:
+
+| Mode | Candidate answer pool | Solved | Failed | Success rate | Avg completed rounds | Avg all rounds | Internal duration |
+|---|---|---:|---:|---:|---:|---:|---:|
+| Strict dictionary | Public dictionary | 2,271 | 38 | 98.35% | 4.256715 | 4.301862 | 00:13:25.133 |
+| Coverage-adjusted | Public dictionary plus 9 local missing answers | 2,280 | 29 | 98.74% | 4.259649 | 4.294067 | 00:13:25.843 |
+| Answer-prior local | Generated local answer list | 2,309 | 0 | 100.00% | 3.542659 | 3.542659 | 00:07:20.284 |
 
 The current strict split-quality report records 00:13:25.133 internal benchmark
 duration, or 0.348693 seconds per answer entry. A separate coverage-adjusted

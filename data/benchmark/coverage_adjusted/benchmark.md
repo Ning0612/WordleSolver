@@ -41,6 +41,14 @@ Benchmark duration excludes final JSON/Markdown writing. When
 `--compare-baseline` is used, it includes both the selected strategy pass and
 the baseline comparison pass.
 
+## Benchmark Modes
+
+| Mode | Candidate answer pool | Purpose |
+|---|---|---|
+| Strict dictionary | Public dictionary | Public benchmark for the committed solver dictionary. |
+| Coverage-adjusted | Public dictionary plus locally generated missing answers | Separates dictionary coverage failures from strategy failures. |
+| Answer-prior local | Locally generated answer list | Diagnostic run for answer-likelihood effects; the answer list remains uncommitted. |
+
 ## Summary
 
 | Metric | Value |
@@ -52,9 +60,9 @@ the baseline comparison pass.
 | Solved | 2280 |
 | Failed | 29 |
 | Success rate | 98.74% |
-| Average attempts (solved) | 4.259649 |
+| Avg completed rounds | 4.259649 |
 | Median attempts (solved) | 4.0 |
-| Average attempts (all) | 4.294067 |
+| Avg all rounds | 4.294067 |
 | Benchmark duration | 00:13:25.843 |
 | Avg duration per word | 0.349001 |
 

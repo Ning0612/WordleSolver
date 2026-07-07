@@ -13,11 +13,27 @@ duration that excludes final JSON/Markdown writing. When `--compare-baseline`
 is used, the internal duration includes both the selected strategy pass and the
 baseline comparison pass.
 
-| Stage | Commit | Total duration | Avg duration / word | Strategy | Solved | Failed | Success rate | Avg attempts (solved) | Avg attempts (all) |
+| Stage | Commit | Total duration | Avg duration / word | Strategy | Solved | Failed | Success rate | Avg completed rounds | Avg all rounds |
 |---|---|---:|---:|---|---:|---:|---:|---:|---:|
 | Reproducible baseline | `111c9b2` | 00:03:35.401 | 0.093287s | `candidate-first` | 2,121 | 188 | 91.86% | 4.328147 | 4.545691 |
 | Adaptive trap-risk exploration | `2a8d29a` | 00:07:42.932 | 0.200490s | `adaptive-exploration` | 2,227 | 82 | 96.45% | 4.416255 | 4.508012 |
 | Small-set split quality | `a0a2f23` | 00:15:44.304 | 0.408966s | `split-quality` | 2,271 | 38 | 98.35% | 4.256715 | 4.301862 |
+
+## Current Benchmark Modes
+
+These rows describe the currently tracked benchmark reports, not new algorithm
+stages. They separate dictionary coverage and answer-pool effects from the
+`split-quality` strategy itself.
+
+| Mode | Report | Candidate answer pool | Solved | Failed | Success rate | Avg completed rounds | Avg all rounds | Internal duration | Avg duration / word |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|
+| Strict dictionary | [`docs/benchmark.md`](benchmark.md) | Public dictionary | 2,271 | 38 | 98.35% | 4.256715 | 4.301862 | 00:13:25.133 | 0.348693s |
+| Coverage-adjusted | [`data/benchmark/coverage_adjusted/benchmark.md`](../data/benchmark/coverage_adjusted/benchmark.md) | Public dictionary plus 9 local missing answers | 2,280 | 29 | 98.74% | 4.259649 | 4.294067 | 00:13:25.843 | 0.349001s |
+| Answer-prior local | [`data/benchmark/answer_prior/benchmark.md`](../data/benchmark/answer_prior/benchmark.md) | Generated local answer list | 2,309 | 0 | 100.00% | 3.542659 | 3.542659 | 00:07:20.284 | 0.190682s |
+
+The strict dictionary mode is the public benchmark. Coverage-adjusted and
+answer-prior local modes are diagnostic runs; the answer list and raw traces are
+generated locally and remain ignored/untracked.
 
 ## Stage Notes
 

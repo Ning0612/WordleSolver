@@ -301,28 +301,17 @@ python src/stats.py
 
 Benchmark run against 2,309 answer entries from the reproducible answer archive using the `split-quality` selection strategy:
 
-- **Solved**: 2,271
-- **Failed**: 38
-- **Success rate**: 98.35% within 6 rounds
-- **Average attempts (solved)**: 4.26
-- **Median attempts (solved)**: 4.0
-- **Average attempts (all)**: 4.30
-- **Benchmark duration**: 00:13:25.133 total, 0.348693 seconds per word
-- **Dictionary coverage**: 9 answer entries are not in the solver dictionary; all 9 are among the failures.
+| Mode | Candidate answer pool | Solved | Failed | Success rate | Avg completed rounds | Avg all rounds | Benchmark duration | Avg duration / word |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| Strict dictionary | Public dictionary | 2,271 | 38 | 98.35% | 4.256715 | 4.301862 | 00:13:25.133 | 0.348693s |
+| Coverage-adjusted | Public dictionary plus 9 local missing answers | 2,280 | 29 | 98.74% | 4.259649 | 4.294067 | 00:13:25.843 | 0.349001s |
+| Answer-prior local | Generated local answer list | 2,309 | 0 | 100.00% | 3.542659 | 3.542659 | 00:07:20.284 | 0.190682s |
 
-Coverage-adjusted local run:
+Mode interpretation:
 
-- **Solved**: 2,280
-- **Failed**: 29
-- **Success rate**: 98.74% within 6 rounds
-- **Benchmark duration**: 00:13:25.843 total, 0.349001 seconds per word
-
-Answer-prior local run:
-
-- **Solved**: 2,309
-- **Failed**: 0
-- **Success rate**: 100.00% within 6 rounds
-- **Benchmark duration**: 00:07:20.284 total, 0.190682 seconds per word
+- **Strict dictionary** is the public, dictionary-backed benchmark.
+- **Coverage-adjusted** adds 9 benchmark answers missing from the dictionary at runtime, without committing the answer list.
+- **Answer-prior local** uses the generated local answer list as the candidate answer pool while still allowing public-dictionary exploration guesses. It is diagnostic evidence, not the public strict benchmark.
 
 Baseline comparison:
 
