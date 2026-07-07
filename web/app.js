@@ -1,5 +1,5 @@
 /**
- * Wordle Solver Web App
+ * Word Puzzle Solver Web App
  * 使用 Pyodide 執行 Python 核心模組
  */
 
@@ -74,7 +74,7 @@ async function init() {
   // 取得 DOM 元素
   DOM.loadingIndicator = document.getElementById('loading-indicator');
   DOM.mainContent = document.getElementById('main-content');
-  DOM.grid = document.getElementById('wordle-grid');
+  DOM.grid = document.getElementById('puzzle-grid');
   DOM.submitBtn = document.getElementById('submit-btn');
   DOM.resetBtn = document.getElementById('reset-btn');
   DOM.candidateList = document.getElementById('candidate-list');

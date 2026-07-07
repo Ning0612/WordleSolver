@@ -335,7 +335,9 @@ Contributions welcome! Please:
 
 ## Acknowledgments
 
-- **Wordle** by Josh Wardle for inspiring the puzzle format
+- **Wordle** by Josh Wardle for inspiring the puzzle format. Wordle is a
+  trademark of its respective owner; this project is independent and uses the
+  name only to describe compatibility with the puzzle format.
 - **Codex** for architecture review and optimization suggestions
 - **Community** for word frequency data and solving strategies
 

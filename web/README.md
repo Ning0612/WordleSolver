@@ -1,8 +1,12 @@
 ← [Back to Main Project](../README.md) | [Desktop Version](../README.md#quick-start)
 
-# Wordle Solver Web 版本
+# Word Puzzle Solver Web 版本
 
 GitHub Pages + Pyodide 實作的 Wordle 解題助手。
+
+> Independent educational solver. Not affiliated with, endorsed by, or sponsored
+> by Wordle, Josh Wardle, or The New York Times. Wordle is referenced only to
+> describe the puzzle format this tool can analyze.
 
 ## 快速開始
 
@@ -103,3 +107,9 @@ web/
 ## 授權
 
 與主專案相同。
+
+## 免責聲明
+
+This web app is an independent educational project. It is not affiliated with
+or endorsed by Wordle or The New York Times. Use it responsibly and avoid using
+solver output to misrepresent unaided game results.

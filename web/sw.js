@@ -1,9 +1,9 @@
 /**
- * Service Worker for Wordle Solver PWA
+ * Service Worker for Word Puzzle Solver PWA
  * 提供離線快取與快速二次載入
  */
 
-const CACHE_NAME = 'wordle-solver-v1.0.1';
+const CACHE_NAME = 'word-puzzle-solver-v1.0.2';
 const PYODIDE_CACHE = 'pyodide-cache-v1';
 
 // 需要快取的靜態資源（使用相對路徑，適配 GitHub Pages 子路徑部署）

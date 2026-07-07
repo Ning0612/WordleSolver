@@ -1,11 +1,11 @@
 {
-  "name": "Wordle Solver - Intelligent Solver Assistant",
-  "short_name": "Wordle Solver",
-  "description": "Algorithm-powered word recommendations for Wordle",
+  "name": "Word Puzzle Solver Assistant",
+  "short_name": "Puzzle Solver",
+  "description": "Independent educational word-puzzle solver assistant",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#6aaa64",
+  "theme_color": "#2563eb",
   "orientation": "portrait-primary",
   "icons": [
     {
