@@ -1,20 +1,20 @@
 {
   "strategy": "adaptive-exploration",
   "dataset_size": 2309,
-  "solved": 2183,
-  "failed": 126,
-  "success_rate": 0.945431,
-  "average_attempts_solved": 4.384333,
+  "solved": 2227,
+  "failed": 82,
+  "success_rate": 0.964487,
+  "average_attempts_solved": 4.416255,
   "median_attempts_solved": 4,
-  "average_attempts_all": 4.527068,
+  "average_attempts_all": 4.508012,
   "distribution": {
     "1": 0,
     "2": 33,
     "3": 342,
     "4": 853,
     "5": 663,
-    "6": 292,
-    "7": 126
+    "6": 336,
+    "7": 82
   },
   "failure_cases": [
     {
@@ -25,19 +25,7 @@
         "marly",
         "pinto",
         "gujar",
-        "wharf"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "paper",
-      "guesses": [
-        "cares",
-        "taver",
-        "lager",
-        "waker",
-        "jupon",
-        "pamhy"
+        "marvy"
       ],
       "rounds": 6
     },
@@ -49,7 +37,7 @@
         "fundi",
         "whomp",
         "gooky",
-        "oxboy"
+        "boozy"
       ],
       "rounds": 6
     },
@@ -61,7 +49,7 @@
         "shout",
         "spong",
         "umbos",
-        "jouks"
+        "skout"
       ],
       "rounds": 6
     },
@@ -73,7 +61,7 @@
         "latch",
         "gundi",
         "pawky",
-        "bafta"
+        "batch"
       ],
       "rounds": 6
     },
@@ -85,55 +73,7 @@
         "baton",
         "daunt",
         "hafiz",
-        "juang"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "boozy",
-      "guesses": [
-        "cares",
-        "bolty",
-        "fundi",
-        "whomp",
-        "gooky",
-        "oxboy"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "fixer",
-      "guesses": [
-        "cares",
-        "tiver",
-        "liner",
-        "bider",
-        "humpy",
-        "forex"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "badly",
-      "guesses": [
-        "cares",
-        "manly",
-        "gaily",
-        "bothy",
-        "upwax",
-        "baldy"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "finer",
-      "guesses": [
-        "cares",
-        "tiver",
-        "liner",
-        "dhoby",
-        "pumex",
-        "finew"
+        "gaunt"
       ],
       "rounds": 6
     },
@@ -145,7 +85,7 @@
         "modif",
         "gulph",
         "bawty",
-        "carve"
+        "crake"
       ],
       "rounds": 6
     },
@@ -157,43 +97,7 @@
         "polki",
         "thund",
         "jewry",
-        "vefry"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "troll",
-      "guesses": [
-        "cares",
-        "drony",
-        "grout",
-        "broth",
-        "tromp",
-        "kovil"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "moist",
-      "guesses": [
-        "cares",
-        "soily",
-        "foist",
-        "bundh",
-        "twigs",
-        "josip"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "fewer",
-      "guesses": [
-        "cares",
-        "tiver",
-        "foder",
-        "glyph",
-        "burez",
-        "weren"
+        "merry"
       ],
       "rounds": 6
     },
@@ -205,7 +109,7 @@
         "deist",
         "gumbo",
         "kevyn",
-        "fixes"
+        "feist"
       ],
       "rounds": 6
     },
@@ -217,31 +121,7 @@
         "guest",
         "festy",
         "whomp",
-        "tends"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "larva",
-      "guesses": [
-        "cares",
-        "bardy",
-        "mario",
-        "garth",
-        "parka",
-        "jalur"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "homer",
-      "guesses": [
-        "cares",
-        "tiver",
-        "foder",
-        "honer",
-        "bulky",
-        "gomer"
+        "nesty"
       ],
       "rounds": 6
     },
@@ -253,9 +133,205 @@
         "flans",
         "bodhi",
         "kumys",
-        "swags"
+        "slags"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "sever",
+      "guesses": [
+        "cares",
+        "soter",
+        "sider",
+        "glyph",
+        "unweb",
+        "seker"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "agape",
+      "guesses": [
+        "cares",
+        "beany",
+        "glave",
+        "image",
+        "agate",
+        "agade"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "power",
+      "guesses": [
+        "cares",
+        "tiver",
+        "foder",
+        "honer",
+        "bower",
+        "jower"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "coyly",
+      "guesses": [
+        "cares",
+        "coiny",
+        "bumph",
+        "godly",
+        "flowk",
+        "colly"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "taunt",
+      "guesses": [
+        "cares",
+        "manly",
+        "baton",
+        "daunt",
+        "hafiz",
+        "gaunt"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "class",
+      "guesses": [
+        "cares",
+        "chads",
+        "blink",
+        "jumpy",
+        "flogs",
+        "claws"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "ionic",
+      "guesses": [
+        "cares",
+        "pinch",
+        "monic",
+        "tubig",
+        "zinky",
+        "nonic"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "carry",
+      "guesses": [
+        "cares",
+        "carob",
+        "midgy",
+        "fulth",
+        "prank",
+        "carvy"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "crave",
+      "guesses": [
+        "cares",
+        "crane",
+        "modif",
+        "gulph",
+        "bawty",
+        "crake"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "aging",
+      "guesses": [
+        "cares",
+        "donia",
+        "ligan",
+        "aking",
+        "upbay",
+        "ating"
       ],
       "rounds": 6
     }
-  ]
+  ],
+  "diagnostics": {
+    "choice_counts": {
+      "candidate:candidate-first": 9357,
+      "exploration:trap-risk": 955
+    },
+    "trap_risk_games_solved": 650,
+    "trap_risk_games_failed": 50,
+    "failure_duplicate_extra_letters": {
+      "0": 18,
+      "1": 49,
+      "2": 14,
+      "3": 1
+    },
+    "failure_last_candidate_count_top": {
+      "2": 32,
+      "3": 20,
+      "4": 12,
+      "5": 8,
+      "1": 4,
+      "12": 2,
+      "56": 1,
+      "25": 1,
+      "13": 1,
+      "6": 1
+    },
+    "failure_template_top": {
+      "_ower": 4,
+      "_aunt": 3,
+      "cra_e": 2,
+      "_esty": 2,
+      "mar_y": 1,
+      "boo_y": 1,
+      "s_out": 1,
+      "_atch": 1,
+      "_erry": 1,
+      "_eist": 1
+    },
+    "failure_suffix2_top": {
+      "er": 19,
+      "nt": 4,
+      "ss": 4,
+      "ve": 4,
+      "ry": 3,
+      "ty": 3,
+      "st": 2,
+      "ly": 2,
+      "al": 2,
+      "ny": 2
+    }
+  },
+  "comparison": {
+    "baseline": {
+      "strategy": "candidate-first",
+      "dataset_size": 2309,
+      "solved": 2121,
+      "failed": 188,
+      "success_rate": 0.918579,
+      "average_attempts_solved": 4.328147,
+      "median_attempts_solved": 4,
+      "average_attempts_all": 4.545691,
+      "distribution": {
+        "1": 0,
+        "2": 33,
+        "3": 378,
+        "4": 846,
+        "5": 588,
+        "6": 276,
+        "7": 188
+      }
+    },
+    "rescued_from_baseline": 119,
+    "regressed_to_failure": 13,
+    "net_solved_delta": 106,
+    "improved_attempts": 217,
+    "worsened_attempts": 167
+  }
 }

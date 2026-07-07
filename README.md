@@ -69,8 +69,8 @@ This repository also includes a reproducible Wordle answer benchmark:
 Rebuild it with:
 
 ```bash
-.\.venv\bin\python.exe scripts\build_wordle_answers.py --source-repo <path-to-wordle-answers> --output data\wordle_answers.txt
-.\.venv\bin\python.exe scripts\benchmark_wordle.py --answers data\wordle_answers.txt --strategy adaptive-exploration --output-dir data\benchmark --report docs\benchmark.md
+python scripts/build_wordle_answers.py --source-repo <path-to-wordle-answers> --output data/wordle_answers.txt
+python scripts/benchmark_wordle.py --answers data/wordle_answers.txt --strategy adaptive-exploration --compare-baseline --output-dir data/benchmark --report docs/benchmark.md
 ```
 
 ## Quick Start
@@ -285,12 +285,12 @@ python src/stats.py
 
 Benchmark run against 2,309 answer entries from the reproducible answer archive using the `adaptive-exploration` selection strategy:
 
-- **Solved**: 2,183
-- **Failed**: 126
-- **Success rate**: 94.54% within 6 rounds
-- **Average attempts (solved)**: 4.38
+- **Solved**: 2,227
+- **Failed**: 82
+- **Success rate**: 96.45% within 6 rounds
+- **Average attempts (solved)**: 4.42
 - **Median attempts (solved)**: 4
-- **Average attempts (all)**: 4.53
+- **Average attempts (all)**: 4.51
 
 ## Contributing
 

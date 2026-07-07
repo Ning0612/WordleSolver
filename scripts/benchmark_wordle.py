@@ -99,7 +99,8 @@ def select_guess(
     if strategy == "adaptive-exploration":
         rounds_remaining = max_rounds - round_number + 1
         should_explore = (
-            len(candidates) > rounds_remaining
+            rounds_remaining > 1
+            and len(candidates) > rounds_remaining
             and len(candidates) <= 20
             and len(constraint.greens) >= 3
             and bool(recommendations["explorations"])
@@ -197,7 +198,20 @@ def run_game(
     )
 
 
-def aggregate_results(results: list[GameResult], max_rounds: int, strategy: str) -> dict:
+def duplicate_extra_count(word: str) -> int:
+    counts = Counter(word)
+    return sum(count - 1 for count in counts.values() if count > 1)
+
+
+def failure_template(result: GameResult) -> str:
+    last_round = result.rounds[-1]
+    return "".join(
+        letter if color == "green" else "_"
+        for letter, color in zip(last_round.guess, last_round.feedback)
+    )
+
+
+def summarize_results(results: list[GameResult], max_rounds: int, strategy: str) -> dict:
     total = len(results)
     solved = [r for r in results if r.solved]
     failed = [r for r in results if not r.solved]
@@ -225,6 +239,88 @@ def aggregate_results(results: list[GameResult], max_rounds: int, strategy: str)
             for r in failed
         ][:20],
     }
+
+
+def build_diagnostics(results: list[GameResult]) -> dict:
+    failed = [r for r in results if not r.solved]
+    choice_counts = Counter(choice for r in results for choice in (round.choice for round in r.rounds))
+
+    return {
+        "choice_counts": dict(sorted(choice_counts.items())),
+        "trap_risk_games_solved": sum(
+            r.solved and any(round.choice == "exploration:trap-risk" for round in r.rounds)
+            for r in results
+        ),
+        "trap_risk_games_failed": sum(
+            (not r.solved) and any(round.choice == "exploration:trap-risk" for round in r.rounds)
+            for r in results
+        ),
+        "failure_duplicate_extra_letters": {
+            str(key): value
+            for key, value in sorted(Counter(duplicate_extra_count(r.answer) for r in failed).items())
+        },
+        "failure_last_candidate_count_top": {
+            str(key): value
+            for key, value in Counter(r.rounds[-1].candidate_count for r in failed).most_common(10)
+        },
+        "failure_template_top": dict(Counter(failure_template(r) for r in failed).most_common(10)),
+        "failure_suffix2_top": dict(Counter(r.answer[3:] for r in failed).most_common(10)),
+    }
+
+
+def build_strategy_comparison(
+    current_results: list[GameResult],
+    baseline_results: list[GameResult],
+    max_rounds: int,
+) -> dict:
+    current_by_answer = {result.answer: result for result in current_results}
+    baseline_by_answer = {result.answer: result for result in baseline_results}
+
+    rescued = [
+        answer
+        for answer, baseline in baseline_by_answer.items()
+        if not baseline.solved and current_by_answer[answer].solved
+    ]
+    regressed_to_failure = [
+        answer
+        for answer, baseline in baseline_by_answer.items()
+        if baseline.solved and not current_by_answer[answer].solved
+    ]
+    improved_attempts = [
+        answer
+        for answer, baseline in baseline_by_answer.items()
+        if current_by_answer[answer].attempts < baseline.attempts
+    ]
+    worsened_attempts = [
+        answer
+        for answer, baseline in baseline_by_answer.items()
+        if current_by_answer[answer].attempts > baseline.attempts
+    ]
+
+    baseline_summary = summarize_results(baseline_results, max_rounds, "candidate-first")
+    baseline_summary.pop("failure_cases", None)
+
+    return {
+        "baseline": baseline_summary,
+        "rescued_from_baseline": len(rescued),
+        "regressed_to_failure": len(regressed_to_failure),
+        "net_solved_delta": len(rescued) - len(regressed_to_failure),
+        "improved_attempts": len(improved_attempts),
+        "worsened_attempts": len(worsened_attempts),
+    }
+
+
+def aggregate_results(
+    results: list[GameResult],
+    max_rounds: int,
+    strategy: str,
+    baseline_results: list[GameResult] | None = None,
+) -> dict:
+    summary = summarize_results(results, max_rounds, strategy)
+    summary["diagnostics"] = build_diagnostics(results)
+    if baseline_results is not None:
+        summary["comparison"] = build_strategy_comparison(results, baseline_results, max_rounds)
+    return summary
 
 
 def write_jsonl(path: Path, results: Iterable[GameResult]) -> None:
@@ -279,16 +375,18 @@ def render_markdown(summary: dict, answers_path: Path, raw_path: Path, summary_p
 
 ## Reproducibility
 
-1. Build the answer list:
+1. Activate the project virtual environment.
+
+2. Build the answer list:
 
 ```bash
-.\\.venv\\bin\\python.exe scripts\\build_wordle_answers.py --source-repo <path-to-wordle-answers> --output data\\wordle_answers.txt
+python scripts/build_wordle_answers.py --source-repo <path-to-wordle-answers> --output data/wordle_answers.txt
 ```
 
-2. Run the benchmark:
+3. Run the benchmark:
 
 ```bash
-.\\.venv\\bin\\python.exe scripts\\benchmark_wordle.py --answers data\\wordle_answers.txt --strategy adaptive-exploration --output-dir data\\benchmark --report docs\\benchmark.md
+python scripts/benchmark_wordle.py --answers data/wordle_answers.txt --strategy adaptive-exploration --compare-baseline --output-dir data/benchmark --report docs/benchmark.md
 ```
 
 ## Summary
@@ -323,6 +421,11 @@ def main() -> int:
         default="adaptive-exploration",
         help="Guess selection strategy for candidate/exploration recommendations.",
     )
+    parser.add_argument(
+        "--compare-baseline",
+        action="store_true",
+        help="Also run candidate-first and include aggregate comparison metrics.",
+    )
     args = parser.parse_args()
 
     answers_path = ROOT / args.answers if not Path(args.answers).is_absolute() else Path(args.answers)
@@ -346,7 +449,16 @@ def main() -> int:
         if index % 100 == 0:
             print(f"Processed {index}/{len(answer_list)} answers")
 
-    summary = aggregate_results(results, args.max_rounds, args.strategy)
+    baseline_results = None
+    if args.compare_baseline and args.strategy != "candidate-first":
+        baseline_results = []
+        for index, answer in enumerate(answer_list, start=1):
+            result = run_game(answer, word_list, recommender, args.max_rounds, "candidate-first")
+            baseline_results.append(result)
+            if index % 100 == 0:
+                print(f"Processed baseline {index}/{len(answer_list)} answers")
+
+    summary = aggregate_results(results, args.max_rounds, args.strategy, baseline_results)
     raw_path = output_dir / "wordle_benchmark_raw.jsonl"
     summary_path = output_dir / "wordle_benchmark_summary.json"
 
