@@ -29,6 +29,14 @@ add missing benchmark answers to the in-memory dictionary:
 python scripts/benchmark_wordle.py --answers data/wordle_answers.txt --strategy split-quality --compare-baseline --include-missing-answers --output-dir data/benchmark/coverage_adjusted --report data/benchmark/coverage_adjusted/benchmark.md --diagnostics-dir data/benchmark/diagnostics
 ```
 
+Answer-prior local runs use the generated local answer list as the candidate
+answer pool while keeping the public dictionary available for exploration
+guesses:
+
+```bash
+python scripts/benchmark_wordle.py --answers data/wordle_answers.txt --strategy split-quality --compare-baseline --include-missing-answers --answer-candidate-pool benchmark --output-dir data/benchmark/answer_prior --report data/benchmark/answer_prior/benchmark.md --diagnostics-dir data/benchmark/answer_prior/diagnostics
+```
+
 Benchmark duration excludes final JSON/Markdown writing. When
 `--compare-baseline` is used, it includes both the selected strategy pass and
 the baseline comparison pass.
@@ -39,6 +47,7 @@ the baseline comparison pass.
 |---|---:|
 | Dataset size | 2309 |
 | Dictionary mode | coverage-adjusted |
+| Answer candidate pool | dictionary |
 | Strategy | split-quality |
 | Solved | 2280 |
 | Failed | 29 |
@@ -64,6 +73,8 @@ the baseline comparison pass.
 - Answers not in dictionary: `9`
 - Failed answers not in dictionary: `0`
 - Dictionary mode: `coverage-adjusted`
+- Answer candidate pool: `dictionary`
+- Answer candidate pool size: `15930`
 - Include missing answers: `True`
 - Base dictionary size: `15921`
 - Benchmark dictionary size: `15930`

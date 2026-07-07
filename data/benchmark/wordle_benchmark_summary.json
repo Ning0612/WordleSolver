@@ -362,6 +362,8 @@
     "answers_not_in_dictionary": 9,
     "failed_answers_not_in_dictionary": 9,
     "dictionary_mode": "strict",
+    "answer_candidate_pool": "dictionary",
+    "answer_candidate_pool_size": 15921,
     "include_missing_answers": false,
     "benchmark_dictionary_size": 15921,
     "base_dictionary_size": 15921

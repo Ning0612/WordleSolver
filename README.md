@@ -65,6 +65,7 @@ This repository also includes a reproducible Wordle answer benchmark:
 - Summary: [`data/benchmark/wordle_benchmark_summary.json`](data/benchmark/wordle_benchmark_summary.json)
 - Report: [`docs/benchmark.md`](docs/benchmark.md)
 - Coverage-adjusted report: [`data/benchmark/coverage_adjusted/benchmark.md`](data/benchmark/coverage_adjusted/benchmark.md)
+- Answer-prior report: [`data/benchmark/answer_prior/benchmark.md`](data/benchmark/answer_prior/benchmark.md)
 - Failure analysis: [`docs/benchmark_failure_analysis.md`](docs/benchmark_failure_analysis.md)
 - Benchmark history: [`docs/benchmark_history.md`](docs/benchmark_history.md)
 
@@ -79,6 +80,13 @@ Coverage-adjusted local runs must use a separate output directory:
 
 ```bash
 python scripts/benchmark_wordle.py --answers data/wordle_answers.txt --strategy split-quality --compare-baseline --include-missing-answers --output-dir data/benchmark/coverage_adjusted --report data/benchmark/coverage_adjusted/benchmark.md --diagnostics-dir data/benchmark/diagnostics
+```
+
+Answer-prior local runs use the generated local answer list as the candidate
+answer pool while still using the public dictionary for exploration guesses:
+
+```bash
+python scripts/benchmark_wordle.py --answers data/wordle_answers.txt --strategy split-quality --compare-baseline --include-missing-answers --answer-candidate-pool benchmark --output-dir data/benchmark/answer_prior --report data/benchmark/answer_prior/benchmark.md --diagnostics-dir data/benchmark/answer_prior/diagnostics
 ```
 
 ## Quick Start
@@ -308,6 +316,13 @@ Coverage-adjusted local run:
 - **Failed**: 29
 - **Success rate**: 98.74% within 6 rounds
 - **Benchmark duration**: 00:13:25.843 total, 0.349001 seconds per word
+
+Answer-prior local run:
+
+- **Solved**: 2,309
+- **Failed**: 0
+- **Success rate**: 100.00% within 6 rounds
+- **Benchmark duration**: 00:07:20.284 total, 0.190682 seconds per word
 
 Baseline comparison:
 

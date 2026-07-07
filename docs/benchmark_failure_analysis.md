@@ -23,6 +23,12 @@ local run with missing benchmark answers added to the in-memory dictionary
 solves 2,280 entries, fails 29, and records 00:13:25.843 internal duration
 (0.349001 seconds per entry).
 
+An answer-prior local run that uses the generated local answer list as the
+candidate answer pool solves all 2,309 entries in 00:07:20.284 internal duration
+(0.190682 seconds per entry). This is diagnostic evidence, not the strict
+public benchmark, because the answer list remains generated locally and
+uncommitted.
+
 ## Implemented Strategy
 
 `split-quality` keeps candidate-first behavior while the candidate set is large.
@@ -81,6 +87,12 @@ remaining failures are still concentrated in shared-structure ambiguity where a
 one-step split-quality choice may not be enough, especially when the answer is
 missing from the solver dictionary or the cluster needs deeper lookahead.
 
+The answer-prior local run removes these failures, which indicates the dominant
+root cause is not split-quality's feedback partitioning. The stricter dictionary
+candidate pool includes many legal guess words that are unlikely answers, and
+those obscure candidates outrank common answer words in the final 2-5 candidate
+endgame.
+
 ## Optimization Plan
 
 1. Improve dictionary coverage.
@@ -94,9 +106,10 @@ missing from the solver dictionary or the cluster needs deeper lookahead.
 
 3. Separate answer candidates from dictionary-only guesses.
    The current dictionary contains many valid guess words that are unlikely
-   answer words. Keeping a local, uncommitted answer list for benchmarking while
-   using a public answer-prior file or frequency prior would reduce guesses such
-   as obscure dictionary-only words.
+   answer words. The local `--answer-candidate-pool benchmark` run confirms this
+   direction by solving all entries. The production-safe version should use a
+   public answer-prior file or frequency prior rather than committing the local
+   benchmark answer list.
 
 4. Evaluate deeper search for the final hard clusters.
    Remaining failures such as `_ower` and `_o_er` patterns may need a limited

@@ -108,5 +108,10 @@ A separate coverage-adjusted local run with `--include-missing-answers` solved
 duration (0.349001s/word). This run adds the 9 missing benchmark answers to the
 in-memory dictionary and is not the strict tracked benchmark.
 
-The next useful work is likely dictionary coverage and local-only diagnostics
-for the remaining hard clusters, rather than more one-step scoring tweaks.
+A separate answer-prior local run with `--answer-candidate-pool benchmark`
+solved 2,309 of 2,309 entries, failed 0, and took 00:07:20.284 internal
+benchmark duration (0.190682s/word). This confirms the remaining strict
+failures are primarily caused by using a broad valid-guess dictionary as the
+answer candidate pool. The generated answer list remains local and uncommitted,
+so the production-safe next step is a public answer-prior or frequency-prior
+tie-breaker rather than committing the benchmark answer list.

@@ -276,13 +276,14 @@ def select_guess(
 def run_game(
     answer: str,
     word_list: list[str],
+    candidate_pool: list[str],
     recommender: WordRecommender,
     max_rounds: int,
     strategy: str,
     diagnostic_writer: DiagnosticWriter | None = None,
 ) -> GameResult:
     merged_constraint: Constraint | None = None
-    candidates = word_list
+    candidates = candidate_pool
     guesses: list[str] = []
     rounds: list[RoundTrace] = []
 
@@ -343,7 +344,7 @@ def run_game(
         feedback_round = FeedbackRound(guess=guess, feedback=feedback)
         constraint = feedback_round.to_constraint()
         merged_constraint = constraint if merged_constraint is None else merged_constraint.merge(constraint)
-        candidates = filter_candidates(word_list, merged_constraint)
+        candidates = filter_candidates(candidate_pool, merged_constraint)
         if not candidates:
             break
 
@@ -513,6 +514,7 @@ def render_markdown(summary: dict, answers_path: Path, raw_path: Path, summary_p
         for label, value in [
             ("Dataset size", summary["dataset_size"]),
             ("Dictionary mode", summary.get("dictionary_coverage", {}).get("dictionary_mode", "strict")),
+            ("Answer candidate pool", summary.get("dictionary_coverage", {}).get("answer_candidate_pool", "dictionary")),
             ("Strategy", summary["strategy"]),
             ("Solved", summary["solved"]),
             ("Failed", summary["failed"]),
@@ -533,6 +535,8 @@ def render_markdown(summary: dict, answers_path: Path, raw_path: Path, summary_p
             ("Answers not in dictionary", coverage.get("answers_not_in_dictionary", "n/a")),
             ("Failed answers not in dictionary", coverage.get("failed_answers_not_in_dictionary", "n/a")),
             ("Dictionary mode", coverage.get("dictionary_mode", "n/a")),
+            ("Answer candidate pool", coverage.get("answer_candidate_pool", "n/a")),
+            ("Answer candidate pool size", coverage.get("answer_candidate_pool_size", "n/a")),
             ("Include missing answers", coverage.get("include_missing_answers", "n/a")),
             ("Base dictionary size", coverage.get("base_dictionary_size", "n/a")),
             ("Benchmark dictionary size", coverage.get("benchmark_dictionary_size", "n/a")),
@@ -590,6 +594,14 @@ add missing benchmark answers to the in-memory dictionary:
 python scripts/benchmark_wordle.py --answers data/wordle_answers.txt --strategy split-quality --compare-baseline --include-missing-answers --output-dir data/benchmark/coverage_adjusted --report data/benchmark/coverage_adjusted/benchmark.md --diagnostics-dir data/benchmark/diagnostics
 ```
 
+Answer-prior local runs use the generated local answer list as the candidate
+answer pool while keeping the public dictionary available for exploration
+guesses:
+
+```bash
+python scripts/benchmark_wordle.py --answers data/wordle_answers.txt --strategy split-quality --compare-baseline --include-missing-answers --answer-candidate-pool benchmark --output-dir data/benchmark/answer_prior --report data/benchmark/answer_prior/benchmark.md --diagnostics-dir data/benchmark/answer_prior/diagnostics
+```
+
 Benchmark duration excludes final JSON/Markdown writing. When
 `--compare-baseline` is used, it includes both the selected strategy pass and
 the baseline comparison pass.
@@ -638,6 +650,15 @@ def main() -> int:
         help="Coverage-adjusted local run: add benchmark answers missing from the dictionary to the in-memory word list.",
     )
     parser.add_argument(
+        "--answer-candidate-pool",
+        choices=("dictionary", "benchmark"),
+        default="dictionary",
+        help=(
+            "Candidate answer pool to filter after feedback. 'dictionary' preserves the public dictionary-backed "
+            "benchmark; 'benchmark' uses the local answer list as the candidate pool without committing it."
+        ),
+    )
+    parser.add_argument(
         "--diagnostics-dir",
         default=None,
         help="Optional local-only directory for small-candidate diagnostic JSONL output.",
@@ -664,12 +685,13 @@ def main() -> int:
         report_path = ROOT / args.report if not Path(args.report).is_absolute() else Path(args.report)
     default_output_dir = ROOT / "data" / "benchmark"
     default_report_path = ROOT / "docs" / "benchmark.md"
-    if args.include_missing_answers and (
+    is_local_adjusted_run = args.include_missing_answers or args.answer_candidate_pool == "benchmark"
+    if is_local_adjusted_run and (
         output_dir.resolve() == default_output_dir.resolve()
         or report_path.resolve() == default_report_path.resolve()
     ):
         parser.error(
-            "--include-missing-answers is a coverage-adjusted local run; "
+            "coverage-adjusted and benchmark answer-pool runs are local adjusted runs; "
             "use a separate --output-dir and --report instead of overwriting strict benchmark artifacts."
         )
 
@@ -682,6 +704,7 @@ def main() -> int:
     base_dictionary_set = set(base_word_list)
     missing_answers = set(answer_list) - base_dictionary_set
     word_list = sorted(base_dictionary_set | missing_answers) if args.include_missing_answers else base_word_list
+    candidate_pool = sorted(set(answer_list)) if args.answer_candidate_pool == "benchmark" else word_list
     stats = LetterStats(word_list)
     recommender = WordRecommender(word_list, stats)
 
@@ -705,7 +728,15 @@ def main() -> int:
     results: list[GameResult] = []
     try:
         for index, answer in enumerate(answer_list, start=1):
-            result = run_game(answer, word_list, recommender, args.max_rounds, args.strategy, diagnostic_writer)
+            result = run_game(
+                answer,
+                word_list,
+                candidate_pool,
+                recommender,
+                args.max_rounds,
+                args.strategy,
+                diagnostic_writer,
+            )
             results.append(result)
             if index % 100 == 0:
                 print(f"Processed {index}/{len(answer_list)} answers")
@@ -717,7 +748,7 @@ def main() -> int:
     if args.compare_baseline and args.strategy != "candidate-first":
         baseline_results = []
         for index, answer in enumerate(answer_list, start=1):
-            result = run_game(answer, word_list, recommender, args.max_rounds, "candidate-first")
+            result = run_game(answer, word_list, candidate_pool, recommender, args.max_rounds, "candidate-first")
             baseline_results.append(result)
             if index % 100 == 0:
                 print(f"Processed baseline {index}/{len(answer_list)} answers")
@@ -728,6 +759,8 @@ def main() -> int:
         "answers_not_in_dictionary": len(missing_answers),
         "failed_answers_not_in_dictionary": len(missing_answers & failed_answers),
         "dictionary_mode": "coverage-adjusted" if args.include_missing_answers else "strict",
+        "answer_candidate_pool": args.answer_candidate_pool,
+        "answer_candidate_pool_size": len(candidate_pool),
         "include_missing_answers": args.include_missing_answers,
         "benchmark_dictionary_size": len(word_list),
         "base_dictionary_size": len(base_word_list),
