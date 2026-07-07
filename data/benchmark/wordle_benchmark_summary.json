@@ -1,54 +1,31 @@
 {
+  "strategy": "adaptive-exploration",
   "dataset_size": 2309,
-  "solved": 2121,
-  "failed": 188,
-  "success_rate": 0.918579,
-  "average_attempts_solved": 4.328147,
+  "solved": 2183,
+  "failed": 126,
+  "success_rate": 0.945431,
+  "average_attempts_solved": 4.384333,
   "median_attempts_solved": 4,
-  "average_attempts_all": 4.545691,
+  "average_attempts_all": 4.527068,
   "distribution": {
     "1": 0,
     "2": 33,
-    "3": 378,
-    "4": 846,
-    "5": 588,
-    "6": 276,
-    "7": 188
+    "3": 342,
+    "4": 853,
+    "5": 663,
+    "6": 292,
+    "7": 126
   },
   "failure_cases": [
-    {
-      "answer": "sissy",
-      "guesses": [
-        "cares",
-        "soily",
-        "sinky",
-        "sixty",
-        "sippy",
-        "sibby"
-      ],
-      "rounds": 6
-    },
     {
       "answer": "marry",
       "guesses": [
         "cares",
         "bardy",
         "marly",
-        "marty",
-        "marvy",
-        "maray"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "staff",
-      "guesses": [
-        "cares",
-        "shant",
-        "stail",
-        "staup",
-        "stagy",
-        "staab"
+        "pinto",
+        "gujar",
+        "wharf"
       ],
       "rounds": 6
     },
@@ -59,32 +36,8 @@
         "taver",
         "lager",
         "waker",
-        "hayer",
-        "japer"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "crazy",
-      "guesses": [
-        "cares",
-        "chark",
-        "craig",
-        "crawl",
-        "crany",
-        "crapy"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "linen",
-      "guesses": [
-        "cares",
-        "toled",
-        "gimel",
-        "lifen",
-        "liken",
-        "liven"
+        "jupon",
+        "pamhy"
       ],
       "rounds": 6
     },
@@ -93,10 +46,10 @@
       "guesses": [
         "cares",
         "bolty",
-        "boody",
-        "booky",
-        "boomy",
-        "boozy"
+        "fundi",
+        "whomp",
+        "gooky",
+        "oxboy"
       ],
       "rounds": 6
     },
@@ -106,57 +59,9 @@
         "cares",
         "soily",
         "shout",
-        "skout",
-        "snout",
-        "spout"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "crass",
-      "guesses": [
-        "cares",
-        "crabs",
-        "crags",
-        "crams",
-        "craps",
-        "craws"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "start",
-      "guesses": [
-        "cares",
-        "spart",
-        "skart",
-        "slart",
-        "smart",
-        "swart"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "goner",
-      "guesses": [
-        "cares",
-        "tiver",
-        "foder",
-        "honer",
-        "boner",
-        "moner"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "gamma",
-      "guesses": [
-        "cares",
-        "manly",
-        "tambo",
-        "damia",
-        "hamza",
-        "pampa"
+        "spong",
+        "umbos",
+        "jouks"
       ],
       "rounds": 6
     },
@@ -166,21 +71,9 @@
         "cares",
         "macho",
         "latch",
-        "batch",
-        "datch",
-        "gatch"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "tweed",
-      "guesses": [
-        "cares",
-        "toled",
-        "tined",
-        "tubed",
-        "typed",
-        "tewed"
+        "gundi",
+        "pawky",
+        "bafta"
       ],
       "rounds": 6
     },
@@ -191,8 +84,44 @@
         "manly",
         "baton",
         "daunt",
-        "gaunt",
-        "haunt"
+        "hafiz",
+        "juang"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "boozy",
+      "guesses": [
+        "cares",
+        "bolty",
+        "fundi",
+        "whomp",
+        "gooky",
+        "oxboy"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "fixer",
+      "guesses": [
+        "cares",
+        "tiver",
+        "liner",
+        "bider",
+        "humpy",
+        "forex"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "badly",
+      "guesses": [
+        "cares",
+        "manly",
+        "gaily",
+        "bothy",
+        "upwax",
+        "baldy"
       ],
       "rounds": 6
     },
@@ -202,21 +131,9 @@
         "cares",
         "tiver",
         "liner",
-        "diner",
-        "piner",
-        "miner"
-      ],
-      "rounds": 6
-    },
-    {
-      "answer": "surer",
-      "guesses": [
-        "cares",
-        "sired",
-        "strew",
-        "sorel",
-        "syren",
-        "sfree"
+        "dhoby",
+        "pumex",
+        "finew"
       ],
       "rounds": 6
     },
@@ -225,34 +142,118 @@
       "guesses": [
         "cares",
         "crane",
-        "craie",
-        "crake",
-        "crape",
-        "crate"
+        "modif",
+        "gulph",
+        "bawty",
+        "carve"
       ],
       "rounds": 6
     },
     {
-      "answer": "skill",
+      "answer": "ferry",
+      "guesses": [
+        "cares",
+        "bergy",
+        "polki",
+        "thund",
+        "jewry",
+        "vefry"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "troll",
+      "guesses": [
+        "cares",
+        "drony",
+        "grout",
+        "broth",
+        "tromp",
+        "kovil"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "moist",
       "guesses": [
         "cares",
         "soily",
-        "shilf",
-        "stilb",
-        "spill",
-        "swill"
+        "foist",
+        "bundh",
+        "twigs",
+        "josip"
       ],
       "rounds": 6
     },
     {
-      "answer": "dodge",
+      "answer": "fewer",
       "guesses": [
         "cares",
-        "boite",
-        "molge",
-        "podge",
-        "fodge",
-        "hodge"
+        "tiver",
+        "foder",
+        "glyph",
+        "burez",
+        "weren"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "heist",
+      "guesses": [
+        "cares",
+        "stile",
+        "deist",
+        "gumbo",
+        "kevyn",
+        "fixes"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "zesty",
+      "guesses": [
+        "cares",
+        "stile",
+        "guest",
+        "festy",
+        "whomp",
+        "tends"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "larva",
+      "guesses": [
+        "cares",
+        "bardy",
+        "mario",
+        "garth",
+        "parka",
+        "jalur"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "homer",
+      "guesses": [
+        "cares",
+        "tiver",
+        "foder",
+        "honer",
+        "bulky",
+        "gomer"
+      ],
+      "rounds": 6
+    },
+    {
+      "answer": "glass",
+      "guesses": [
+        "cares",
+        "plats",
+        "flans",
+        "bodhi",
+        "kumys",
+        "swags"
       ],
       "rounds": 6
     }

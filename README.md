@@ -64,12 +64,13 @@ This repository also includes a reproducible Wordle answer benchmark:
 - Raw trace: `data/benchmark/wordle_benchmark_raw.jsonl` (generated locally; not committed)
 - Summary: [`data/benchmark/wordle_benchmark_summary.json`](data/benchmark/wordle_benchmark_summary.json)
 - Report: [`docs/benchmark.md`](docs/benchmark.md)
+- Failure analysis: [`docs/benchmark_failure_analysis.md`](docs/benchmark_failure_analysis.md)
 
 Rebuild it with:
 
 ```bash
 .\.venv\bin\python.exe scripts\build_wordle_answers.py --source-repo <path-to-wordle-answers> --output data\wordle_answers.txt
-.\.venv\bin\python.exe scripts\benchmark_wordle.py --answers data\wordle_answers.txt --output-dir data\benchmark --report docs\benchmark.md
+.\.venv\bin\python.exe scripts\benchmark_wordle.py --answers data\wordle_answers.txt --strategy adaptive-exploration --output-dir data\benchmark --report docs\benchmark.md
 ```
 
 ## Quick Start
@@ -282,14 +283,14 @@ python src/stats.py
 
 ## Algorithm Performance
 
-Benchmark run against 2,309 answer entries from the reproducible answer archive:
+Benchmark run against 2,309 answer entries from the reproducible answer archive using the `adaptive-exploration` selection strategy:
 
-- **Solved**: 2,121
-- **Failed**: 188
-- **Success rate**: 91.86% within 6 rounds
-- **Average attempts (solved)**: 4.33
+- **Solved**: 2,183
+- **Failed**: 126
+- **Success rate**: 94.54% within 6 rounds
+- **Average attempts (solved)**: 4.38
 - **Median attempts (solved)**: 4
-- **Average attempts (all)**: 4.55
+- **Average attempts (all)**: 4.53
 
 ## Contributing
 

@@ -39,6 +39,7 @@ MAX_ROUNDS_DEFAULT = 6
 class RoundTrace:
     round: int
     guess: str
+    choice: str
     feedback: list[str]
     candidate_count: int
 
@@ -50,6 +51,13 @@ class GameResult:
     attempts: int
     guesses: list[str]
     rounds: list[RoundTrace]
+
+
+@dataclass(frozen=True)
+class GuessChoice:
+    word: str
+    category: str
+    reason: str
 
 
 def load_answers(path: Path) -> list[str]:
@@ -79,19 +87,56 @@ def simulate_feedback(guess: str, answer: str) -> list[FeedbackColor]:
     return feedback
 
 
-def select_guess(recommendations: dict[str, list[tuple[str, float]]], fallback_pool: list[str]) -> str:
+def select_guess(
+    recommendations: dict[str, list[tuple[str, float]]],
+    fallback_pool: list[str],
+    candidates: list[str],
+    constraint: Constraint,
+    round_number: int,
+    max_rounds: int,
+    strategy: str,
+) -> GuessChoice:
+    if strategy == "adaptive-exploration":
+        rounds_remaining = max_rounds - round_number + 1
+        should_explore = (
+            len(candidates) > rounds_remaining
+            and len(candidates) <= 20
+            and len(constraint.greens) >= 3
+            and bool(recommendations["explorations"])
+        )
+        if should_explore:
+            return GuessChoice(
+                word=recommendations["explorations"][0][0],
+                category="exploration",
+                reason="trap-risk",
+            )
+
     if recommendations["candidates"]:
-        return recommendations["candidates"][0][0]
+        return GuessChoice(
+            word=recommendations["candidates"][0][0],
+            category="candidate",
+            reason="candidate-first",
+        )
     if recommendations["explorations"]:
-        return recommendations["explorations"][0][0]
+        return GuessChoice(
+            word=recommendations["explorations"][0][0],
+            category="exploration",
+            reason="candidate-empty",
+        )
 
     if fallback_pool:
-        return fallback_pool[0]
+        return GuessChoice(word=fallback_pool[0], category="fallback", reason="recommendation-empty")
 
     raise ValueError("No guess candidates available")
 
 
-def run_game(answer: str, word_list: list[str], recommender: WordRecommender, max_rounds: int) -> GameResult:
+def run_game(
+    answer: str,
+    word_list: list[str],
+    recommender: WordRecommender,
+    max_rounds: int,
+    strategy: str,
+) -> GameResult:
     merged_constraint: Constraint | None = None
     candidates = word_list
     guesses: list[str] = []
@@ -105,13 +150,23 @@ def run_game(answer: str, word_list: list[str], recommender: WordRecommender, ma
             round_number=round_number,
             top_n=5,
         )
-        guess = select_guess(recommendations, candidates)
+        choice = select_guess(
+            recommendations=recommendations,
+            fallback_pool=candidates,
+            candidates=candidates,
+            constraint=active_constraint,
+            round_number=round_number,
+            max_rounds=max_rounds,
+            strategy=strategy,
+        )
+        guess = choice.word
         guesses.append(guess)
 
         feedback = simulate_feedback(guess, answer)
         round_trace = RoundTrace(
             round=round_number,
             guess=guess,
+            choice=f"{choice.category}:{choice.reason}",
             feedback=[color.value for color in feedback],
             candidate_count=len(candidates),
         )
@@ -142,7 +197,7 @@ def run_game(answer: str, word_list: list[str], recommender: WordRecommender, ma
     )
 
 
-def aggregate_results(results: list[GameResult], max_rounds: int) -> dict:
+def aggregate_results(results: list[GameResult], max_rounds: int, strategy: str) -> dict:
     total = len(results)
     solved = [r for r in results if r.solved]
     failed = [r for r in results if not r.solved]
@@ -152,6 +207,7 @@ def aggregate_results(results: list[GameResult], max_rounds: int) -> dict:
     distribution = Counter(r.attempts if r.solved else max_rounds + 1 for r in results)
 
     return {
+        "strategy": strategy,
         "dataset_size": total,
         "solved": len(solved),
         "failed": len(failed),
@@ -195,6 +251,7 @@ def render_markdown(summary: dict, answers_path: Path, raw_path: Path, summary_p
         f"| {label} | {value} |"
         for label, value in [
             ("Dataset size", summary["dataset_size"]),
+            ("Strategy", summary["strategy"]),
             ("Solved", summary["solved"]),
             ("Failed", summary["failed"]),
             ("Success rate", f'{summary["success_rate"] * 100:.2f}%'),
@@ -216,8 +273,8 @@ def render_markdown(summary: dict, answers_path: Path, raw_path: Path, summary_p
 
 ## Dataset
 
-- Answer list: `{display_path(answers_path)}`
-- Raw trace: `{display_path(raw_path)}`
+- Answer list: `{display_path(answers_path)}` (generated locally; not committed)
+- Raw trace: `{display_path(raw_path)}` (generated locally; not committed)
 - Summary JSON: `{display_path(summary_path)}`
 
 ## Reproducibility
@@ -231,7 +288,7 @@ def render_markdown(summary: dict, answers_path: Path, raw_path: Path, summary_p
 2. Run the benchmark:
 
 ```bash
-.\\.venv\\bin\\python.exe scripts\\benchmark_wordle.py --answers data\\wordle_answers.txt --output-dir data\\benchmark --report docs\\benchmark.md
+.\\.venv\\bin\\python.exe scripts\\benchmark_wordle.py --answers data\\wordle_answers.txt --strategy adaptive-exploration --output-dir data\\benchmark --report docs\\benchmark.md
 ```
 
 ## Summary
@@ -260,6 +317,12 @@ def main() -> int:
     parser.add_argument("--report", default="docs/benchmark.md", help="Markdown report path.")
     parser.add_argument("--max-rounds", type=int, default=MAX_ROUNDS_DEFAULT)
     parser.add_argument("--limit", type=int, default=0, help="Optional cap on the number of answers to benchmark.")
+    parser.add_argument(
+        "--strategy",
+        choices=("candidate-first", "adaptive-exploration"),
+        default="adaptive-exploration",
+        help="Guess selection strategy for candidate/exploration recommendations.",
+    )
     args = parser.parse_args()
 
     answers_path = ROOT / args.answers if not Path(args.answers).is_absolute() else Path(args.answers)
@@ -278,12 +341,12 @@ def main() -> int:
 
     results: list[GameResult] = []
     for index, answer in enumerate(answer_list, start=1):
-        result = run_game(answer, word_list, recommender, args.max_rounds)
+        result = run_game(answer, word_list, recommender, args.max_rounds, args.strategy)
         results.append(result)
         if index % 100 == 0:
             print(f"Processed {index}/{len(answer_list)} answers")
 
-    summary = aggregate_results(results, args.max_rounds)
+    summary = aggregate_results(results, args.max_rounds, args.strategy)
     raw_path = output_dir / "wordle_benchmark_raw.jsonl"
     summary_path = output_dir / "wordle_benchmark_summary.json"
 
