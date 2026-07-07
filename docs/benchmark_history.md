@@ -5,17 +5,19 @@ list and raw trace are generated locally and intentionally not committed.
 
 All rows use the same 2,309-entry local benchmark answer list.
 
-| Stage | Commit | Strategy | Solved | Failed | Success rate | Avg attempts (solved) | Avg attempts (all) |
-|---|---|---|---:|---:|---:|---:|---:|
-| Reproducible baseline | `111c9b2` | `candidate-first` | 2,121 | 188 | 91.86% | 4.328147 | 4.545691 |
-| Adaptive trap-risk exploration | `2a8d29a` | `adaptive-exploration` | 2,227 | 82 | 96.45% | 4.416255 | 4.508012 |
-| Small-set split quality | `a0a2f23` | `split-quality` | 2,271 | 38 | 98.35% | 4.256715 | 4.301862 |
+| Stage | Commit | Time (UTC+8) | Strategy | Solved | Failed | Success rate | Avg attempts (solved) | Avg attempts (all) |
+|---|---|---|---|---:|---:|---:|---:|---:|
+| Reproducible baseline | `111c9b2` | 2026-07-07 14:46:44 | `candidate-first` | 2,121 | 188 | 91.86% | 4.328147 | 4.545691 |
+| Adaptive trap-risk exploration | `2a8d29a` | 2026-07-07 15:33:55 | `adaptive-exploration` | 2,227 | 82 | 96.45% | 4.416255 | 4.508012 |
+| Small-set split quality | `a0a2f23` | 2026-07-07 19:48:22 | `split-quality` | 2,271 | 38 | 98.35% | 4.256715 | 4.301862 |
 
 ## Stage Notes
 
 ### Reproducible Baseline
 
 Commit: `111c9b2 test: add reproducible wordle benchmark`
+
+Time: 2026-07-07 14:46:44 UTC+8
 
 Changes:
 
@@ -34,6 +36,8 @@ Observed behavior:
 ### Adaptive Trap-Risk Exploration
 
 Commit: `2a8d29a test: refine adaptive wordle benchmark analysis`
+
+Time: 2026-07-07 15:33:55 UTC+8
 
 Changes:
 
@@ -55,6 +59,8 @@ Observed behavior:
 ### Small-Set Split Quality
 
 Commit: `a0a2f23 test: add split-quality wordle benchmark strategy`
+
+Time: 2026-07-07 19:48:22 UTC+8
 
 Changes:
 
