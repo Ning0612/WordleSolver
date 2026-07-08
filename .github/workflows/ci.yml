@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Python tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Compile Python sources
+        run: python -m compileall src scripts tests
+
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Validate JSON assets
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          for path in [
+              Path("config/weights.json"),
+              Path("web/assets/five_letter_words.json"),
+              Path("data/benchmark/wordle_benchmark_summary.json"),
+          ]:
+              with path.open(encoding="utf-8") as fh:
+                  json.load(fh)
+              print(f"valid json: {path}")
+          PY
+
+      - name: Check generated answer list is not committed
+        run: test ! -f data/wordle_answers.txt

@@ -16,6 +16,7 @@ An intelligent desktop application that helps solve Wordle puzzles using advance
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![UI](https://img.shields.io/badge/UI-Tkinter-orange)
+[![CI](https://github.com/Ning0612/wordle-solver/actions/workflows/ci.yml/badge.svg)](https://github.com/Ning0612/wordle-solver/actions/workflows/ci.yml)
 
 ## Features
 
@@ -273,6 +274,17 @@ Edit `config/weights.json` to adjust scoring behavior:
 ## Development
 
 ### Running Tests
+
+GitHub Actions runs the public-safe CI suite on push, pull requests, and manual
+workflow dispatch:
+
+- `python -m compileall src scripts tests`
+- `python -m unittest discover -s tests -v`
+- JSON validation for config, web dictionary assets, and tracked benchmark summary
+- a small benchmark smoke test using a temporary, self-contained answer fixture
+
+The CI does not require or commit `data/wordle_answers.txt`; full benchmark
+answer lists and raw traces remain locally generated artifacts.
 
 Each module has built-in tests accessible via `__main__`:
 
