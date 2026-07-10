@@ -11,6 +11,10 @@ Both versions share the same intelligent constraint-based solving algorithm.
 
 ---
 
+## Project Status
+
+Personal side project for experimenting with Wordle-solving heuristics and UI workflows. It may continue to receive maintenance when new ideas or practical improvements come up.
+
 An intelligent desktop application that helps solve Wordle puzzles using advanced constraint-based filtering and weighted scoring algorithms.
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
