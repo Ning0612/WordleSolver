@@ -39,7 +39,7 @@ class FeedbackRound:
         if not self.guess.isalpha() or not self.guess.islower():
             raise ValueError(f"Guess must be lowercase alphabetic: '{self.guess}'")
 
-        # Validate feedback types (Codex fix)
+        # Validate feedback types.
         for i, color in enumerate(self.feedback):
             if not isinstance(color, FeedbackColor):
                 raise TypeError(
@@ -213,7 +213,7 @@ class Constraint:
             if positions:
                 merged_yellows[letter] = positions
 
-        # Detect green/yellow conflicts (Codex fix)
+        # Detect green/yellow conflicts.
         for pos, letter in merged_greens.items():
             if letter in merged_yellows and pos in merged_yellows[letter]:
                 raise ValueError(

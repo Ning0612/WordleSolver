@@ -14,7 +14,7 @@ class LetterStats:
     Computes and caches letter frequency statistics for word lists.
 
     Uses position-based frequency analysis to help identify high-value guesses.
-    Implements caching based on frozenset (Codex fix: avoids hash collision).
+    Implements caching based on frozenset to avoid hash collisions.
     """
 
     def __init__(self, full_dictionary: List[str]):
@@ -25,7 +25,7 @@ class LetterStats:
             full_dictionary: Complete word list for fallback when candidates are few
         """
         self.full_dictionary = full_dictionary
-        # Codex fix: Use frozenset as key instead of hash to avoid collisions
+        # Use frozenset as key instead of hash to avoid collisions.
         self._cache: Dict[FrozenSet[str], Dict[int, Dict[str, float]]] = {}
 
         # Precompute full dictionary stats at startup (used as fallback)
@@ -88,7 +88,7 @@ class LetterStats:
         Returns:
             Position frequency dictionary
 
-        Strategy (per Codex review):
+        Strategy:
         - If candidates >= threshold: use candidate-specific frequencies (more precise)
         - If candidates < threshold: use full dictionary frequencies (more stable)
         """
@@ -97,7 +97,7 @@ class LetterStats:
             return self._full_dict_stats
 
         # Generate cache key based on candidate set identity
-        # Codex fix: Use frozenset directly as key (not hash) to avoid collisions
+        # Use frozenset directly as key to avoid hash collisions.
         cache_key = frozenset(candidates)
 
         # Check cache

@@ -109,7 +109,7 @@ class WordleSolverApp:
         """Initialize application."""
         self.master = master
         self.master.title("Wordle Solver - Independent Analysis Tool")
-        # Codex fix: Increase height to show full 6 rows + RESET button
+        # Increase height to show all 6 rows and the reset button.
         self.master.geometry("500x1000")
         self.master.configure(bg=COLORS["bg_dark"])
 
@@ -140,15 +140,15 @@ class WordleSolverApp:
         # UI widgets storage
         self.history_labels = []  # History grid labels (6×5 for all rounds)
         self.recommend_labels = []  # Recommendation labels
-        # Codex fix: letter_labels will point to current history row (no separate row 7)
+        # letter_labels points to the current history row; there is no separate row 7.
 
         # Create UI
         self._create_widgets()
 
-        # Bind keyboard events (Codex fix: use bind_all to capture globally)
+        # Bind keyboard events globally so the grid keeps keyboard focus.
         self.master.bind_all("<Key>", self._on_key_press)
 
-        # Set initial focus to master (Codex fix: ensure keyboard events work)
+        # Set initial focus to master so keyboard events work immediately.
         self.master.focus_set()
 
         # Initial recommendations
@@ -253,7 +253,7 @@ class WordleSolverApp:
 
         All 6 rows are history rows.
         Current input uses the active history row (round_number - 1).
-        Codex fix: Removed separate row 7 for input.
+        The separate input row was removed; the active history row is edited directly.
 
         Enhanced: Click on cell to cycle color (Gray → Orange → Blue)
         """
@@ -635,7 +635,7 @@ class WordleSolverApp:
         """
         Update history grid with submitted rounds.
 
-        Codex fix: Only update submitted rows, not current input row.
+        Only submitted history rows are updated; the current input row is left untouched.
         """
         # Only update rows that have been submitted (history)
         for row_idx, round_data in enumerate(self.state.history):

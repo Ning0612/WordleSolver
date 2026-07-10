@@ -20,7 +20,7 @@ def filter_candidates(words: List[str], constraint: Constraint) -> List[str]:
     3. Letter counts must satisfy min/max constraints
     4. Gray letters (max_count==0) must not appear
 
-    Performance optimization (per Codex review):
+    Performance optimization:
     - Use Counter() once per word to avoid repeated word.count()
 
     Args:
@@ -55,7 +55,7 @@ def _matches_constraint(word: str, constraint: Constraint) -> bool:
         if word[pos] != letter:
             return False
 
-    # Precompute letter counts for efficiency (Codex optimization)
+    # Precompute letter counts for efficiency.
     word_counts = Counter(word)
 
     # Rule 2: Check yellows (must exist, not at excluded positions)

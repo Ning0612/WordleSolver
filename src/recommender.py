@@ -114,7 +114,7 @@ class WordRecommender:
             with open(weights_path, 'r') as f:
                 loaded_weights = json.load(f)
 
-            # Codex fix: Validate types and filter meta keys
+            # Validate types and filter meta keys.
             weights = DEFAULT_WEIGHTS.copy()
 
             for key in DEFAULT_WEIGHTS.keys():
@@ -205,7 +205,7 @@ class WordRecommender:
             Dict with "candidates" and "explorations" keys, each containing
             list of (word, score) tuples, sorted by score descending
         """
-        # Validate inputs (Codex fix)
+        # Validate inputs before scoring.
         if round_number < 1:
             raise ValueError(f"round_number must be >= 1, got {round_number}")
         if top_n < 1:
@@ -514,7 +514,7 @@ if __name__ == "__main__":
         matches = _matches_constraint(word, c1)
         print(f"  {word}: {'MATCH' if matches else 'NO MATCH'}")
 
-    # Test 3: Verify Phase 2 excludes words with ANY gray letter (Codex fix)
+    # Test 3: Verify Phase 2 excludes words with any gray letter.
     print("\n=== Test 3: Phase 2 Exclusion Logic (Codex Fix Verification) ===")
     definitely_absent = c1.get_definitely_absent()
     print(f"Definitely absent letters (max_count==0): {definitely_absent}")

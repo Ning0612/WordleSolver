@@ -128,7 +128,7 @@ def _matches_constraint(word: str, constraint: Constraint) -> bool:
         if word[pos] != letter:
             return False
 
-    # Precompute letter counts (Codex optimization)
+    # Precompute letter counts
     word_counts = Counter(word)
 
     # Rule 2: Check yellows (must exist, not at excluded positions)
@@ -295,7 +295,7 @@ def get_position_frequencies(
     if len(candidates) < min_candidates_threshold:
         return self._full_dict_stats
 
-    # Use frozenset as cache key (Codex fix: avoids hash collisions)
+    # Use frozenset as cache key to avoid hash collisions
     cache_key = frozenset(candidates)
 
     if cache_key in self._cache:
