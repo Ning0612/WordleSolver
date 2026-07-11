@@ -15,6 +15,8 @@ Both versions share the same intelligent constraint-based solving algorithm.
 
 Personal side project for experimenting with Wordle-solving heuristics and UI workflows. It may continue to receive maintenance when new ideas or practical improvements come up.
 
+> **Benchmark (strict dictionary):** 98.35% solve rate with an average of 4.26 completed guesses across 2,309 reproducible answer entries. See the [benchmark report](docs/benchmark.md) for scope and limitations.
+
 An intelligent desktop application that helps solve Wordle puzzles using advanced constraint-based filtering and weighted scoring algorithms.
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
